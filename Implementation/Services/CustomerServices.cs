@@ -82,9 +82,9 @@ namespace HMS.Implementation.Services
         }
 
 
-        public async Task<BaseResponse<Guid>> DeleteCustomerAsync(int Id)
+        public async Task<BaseResponse<Guid>> DeleteCustomerAsync(Guid Id)
         {
-            var customer = await _dbContext.Customers.FirstOrDefaultAsync(x => x.Id == Id);
+            var customer = await _dbContext.Customers.FirstOrDefaultAsync();
             if (customer != null)
             {
                 _dbContext.Customers.Remove(customer);
@@ -110,7 +110,7 @@ namespace HMS.Implementation.Services
 
 
 
-        public async Task<BaseResponse<IList<CustomerDto>>> GetCustomerByIdAsync(int Id)
+        public async Task<BaseResponse<IList<CustomerDto>>> GetCustomerByIdAsync(Guid Id)
         {
             var customer = await _dbContext.Customers
                 .Where(x => x.Id == Id)
@@ -168,7 +168,7 @@ namespace HMS.Implementation.Services
         }
 
 
-        public async Task<BaseResponse<CustomerDto>> GetCustomerAsync(int Id)
+        public async Task<BaseResponse<CustomerDto>> GetCustomerAsync(Guid Id)
         {
             var customer = await _dbContext.Customers.FirstOrDefaultAsync(x => x.Id == Id);
             if (customer != null)
@@ -234,9 +234,9 @@ namespace HMS.Implementation.Services
             }
         }
 
-        public async Task<BaseResponse<CustomerDto>> UpdateCustomer(int Id, UpdateCustomer request)
+        public async Task<BaseResponse<CustomerDto>> UpdateCustomer(Guid Id, UpdateCustomer request)
         {
-            var customer = await _dbContext.Customers.FirstOrDefaultAsync(x => x.Id == Id);
+            var customer = await _dbContext.Customers.FirstOrDefaultAsync();
             if (customer == null)
             {
                 return new BaseResponse<CustomerDto>

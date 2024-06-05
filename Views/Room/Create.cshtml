@@ -49,30 +49,29 @@
         <input asp-for="RoomRate" class="form-control" />
         <span asp-validation-for="RoomRate" class="text-danger"></span>
 
-        @* <div class="col-md-6" style="margin-top: 20px; font-size: large; font-weight: medium; color:dark">
+        <div class="form-group">
             <i><label class="control-label"></label> </i>
             <label asp-for="Amenity"></label>
 
-            <select asp-for="Amenity" class="form-control" asp-items="ViewBag.SelectAmenity" required>
-                <option value=><i>Select The Amenity You Want </i></option>
+            <select asp-for="Amenity" class="form-control" asp-items="ViewBag.SelectAmenity">
+                <option value=><i>Select Amenity</i></option>
             </select>
-        </div> *@
+        </div>
 
-    <div class="form-group">
-        <label asp-for="RoomStatus"></label>
-        <select asp-for="RoomStatus" class="form-control" asp-items="Html.GetEnumSelectList<HotelManagementSystem.Model.Entity.Enum.RoomStatus>()">
-            <option value="">Select Room Status</option>
-        </select>
-        <span asp-validation-for="RoomStatus" class="text-danger"></span>
-    </div>
+        <div class="form-group">
+            <label asp-for="RoomStatus"></label>
+            <select asp-for="RoomStatus" class="form-control" asp-items="Html.GetEnumSelectList<HotelManagementSystem.Model.Entity.Enum.RoomStatus>()">
+                <option value="">Select Room Status</option>
+            </select>
+            <span asp-validation-for="RoomStatus" class="text-danger"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Availability"></label>
+            <input asp-for="Availability" type="checkbox" />
+            <span asp-validation-for="Availability" class="text-danger"></span>
+        </div>
 
-    <div class="form-group">
-        <label asp-for="Availability"></label>
-        <input asp-for="Availability" class="form-control" type="checkbox" />
-        <span asp-validation-for="Availability" class="text-danger"></span>
-    </div>
-
-    <div>
-        <button type="submit" value="Create" class="btn btn-primary"> Create  </button>
-    </div>
+        <div>
+            <button type="submit" value="Create" class="btn btn-primary"> Create  </button>
+        </div>
 </form>

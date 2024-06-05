@@ -9,10 +9,10 @@ namespace HotelManagementSystem.Controllers
     public class OrderController : Controller
     {
         private readonly IOrderServices _orderServices;
-
         public OrderController(IOrderServices orderServices)
         {
             _orderServices = orderServices;
+           
         }
 
 
@@ -24,7 +24,7 @@ namespace HotelManagementSystem.Controllers
            // return View(new List<OrderDto>());
         }
 
-
+        
         public async Task<IActionResult> Create()
         {
             var order = await _orderServices.GetAllOrderAsync();
@@ -51,7 +51,7 @@ namespace HotelManagementSystem.Controllers
 
 
         [HttpGet("edit-order/{id}")]
-        public async Task<IActionResult> EditOrder([FromRoute] int id)
+        public async Task<IActionResult> EditOrder([FromRoute] Guid id)
         {
             var order = await _orderServices.GetOrderAsync(id);
 
@@ -59,8 +59,8 @@ namespace HotelManagementSystem.Controllers
         }
 
 
-        [HttpPost("update-order")]
-        public async Task<IActionResult> UpdateOrder(UpdateOrder request)
+        [HttpPost("edit-order/{id}")]
+        public async Task<IActionResult> EditOrder(UpdateOrder request)
         {
 
             var order = await _orderServices.UpdateOrder(request.CustomerId, request);
@@ -75,7 +75,7 @@ namespace HotelManagementSystem.Controllers
 
 
         [HttpGet("delete-order/{id}")]
-        public async Task<IActionResult> Deleteorder([FromRoute] int id)
+        public async Task<IActionResult> Deleteorder([FromRoute] Guid id)
         {
             var order = await _orderServices.DeleteOrderAsync(id);
             if (order.Success)
@@ -105,7 +105,7 @@ namespace HotelManagementSystem.Controllers
         }
 
         [HttpGet("get-order-by-id/{id}")]
-        public async Task<IActionResult> GetAllOrderById(int Id)
+        public async Task<IActionResult> GetAllOrderById(Guid Id)
         {
             var order = await _orderServices.GetOrderByIdAsync(Id);
             if (order.Success)

@@ -6,7 +6,7 @@ namespace HotelManagementSystem.Dto.RequestModel
 {
     public class CreateUser
     {
-        public int UserId { get; set; }
+        public Guid UserId { get; set; }
         public string? Name { get; set; }
         public string? Address { get; set; }
         public string? Email { get; set; }

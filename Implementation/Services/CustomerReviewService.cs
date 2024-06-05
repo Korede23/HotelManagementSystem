@@ -19,7 +19,7 @@ namespace HotelManagementSystem.Implementation.Services
             _customerServices = customerServices;
         }
 
-        public async Task<BaseResponse<Guid>> CreateReview(CreateReview request, int Id)
+        public async Task<BaseResponse<Guid>> CreateReview(CreateReview request, Guid Id)
         {
             var customer = await _customerServices.GetCustomerByIdAsync(Id);
             if (customer == null)

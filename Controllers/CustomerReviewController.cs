@@ -35,7 +35,7 @@ namespace HMS.Controllers
         }
 
         [HttpPost("create-review")]
-        public async Task<IActionResult> CreateReview(CreateReview request, int Id)
+        public async Task<IActionResult> CreateReview(CreateReview request, Guid Id)
         {
             var review = await _customerReviewService.CreateReview(request, Id);
             if (review.Success)

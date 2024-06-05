@@ -4,7 +4,7 @@ namespace HotelManagementSystem.Dto.RequestModel
 {
     public class UpdateBooking
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
        // public int Duration { get; set; }
         //public DateTime CheckIn { get; set; }
         //public DateTime Checkout { get; set; }

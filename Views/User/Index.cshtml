@@ -21,7 +21,6 @@
                 <th>Phone Number</th>
                 <th>User Name</th>
                 <th>Age</th>
-                <th>Password</th>
                 <th>Gender</th>
                 <th></th>
             </tr>
@@ -36,7 +35,6 @@
                     <td>@Html.DisplayFor(modelItem => item.PhoneNumber)</td>
                     <td>@Html.DisplayFor(modelItem => item.UserName)</td>
                     <td>@Html.DisplayFor(modelItem => item.Age)</td>
-                    <td>@Html.DisplayFor(modelItem => item.Password)</td>
                     <td>@Html.DisplayFor(modelItem => item.Gender)</td>
                     <td>
                         <a asp-action="EditUser" asp-route-id="@item.UserId">Edit</a> |

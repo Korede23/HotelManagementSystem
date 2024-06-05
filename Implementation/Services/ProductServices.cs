@@ -23,9 +23,9 @@ namespace HotelManagementSystem.Implementation.Services
             {
                 var items = new Product
                 {
+                    Id = request.Id,
                     Name = request.Name,
-                    Items = request.Items,
-                    Price = request.Price,
+                    Price = request.Price
                 };
                 _dbContext.Products.Add(items);
             }
@@ -51,9 +51,9 @@ namespace HotelManagementSystem.Implementation.Services
 
         }
 
-        public async Task<BaseResponse<Guid>> DeleteProductAsync(int Id)
+        public async Task<BaseResponse<Guid>> DeleteProductAsync(Guid Id)
         {
-            var item = await _dbContext.Products.FirstOrDefaultAsync(x => x.Id == Id);
+            var item = await _dbContext.Products.FirstOrDefaultAsync();
 
             if (item != null)
             {
@@ -78,14 +78,13 @@ namespace HotelManagementSystem.Implementation.Services
             }
         }
 
-        public async Task<BaseResponse<IList<ProductDto>>> GetAllProductsByIdAsync(int Id)
+        public async Task<BaseResponse<IList<ProductDto>>> GetAllProductsByIdAsync(Guid Id)
         {
 
             var item = await _dbContext.Products
                 .Where(x => x.Id == Id)
                 .Select(x => new ProductDto
                 {
-                    Items = x.Items,
                     Name = x.Name,
                     Price = x.Price,
                 }).ToListAsync();
@@ -111,7 +110,7 @@ namespace HotelManagementSystem.Implementation.Services
         }
 
 
-        public async Task<BaseResponse<ProductDto>> GetProductAsync(int Id)
+        public async Task<BaseResponse<ProductDto>> GetProductAsync(Guid Id)
         {
             var product = await _dbContext.Products.FirstOrDefaultAsync(x => x.Id == Id);
             if (product != null)
@@ -123,7 +122,6 @@ namespace HotelManagementSystem.Implementation.Services
                     Data = new ProductDto
                     {
                         Id = product.Id,
-                        Items = product.Items,
                         Name = product.Name,
                         Price = product.Price,
                     }
@@ -143,7 +141,6 @@ namespace HotelManagementSystem.Implementation.Services
             var item = await _dbContext.Products
                 .Select(x => new ProductDto
                 {
-                    Items = x.Items,
                     Name = x.Name,
                     Price = x.Price,
                 }).ToListAsync();
@@ -168,7 +165,7 @@ namespace HotelManagementSystem.Implementation.Services
         }
 
 
-        public async Task<BaseResponse<ProductDto>> UpdateProduct(int Id, UpdateProduct request)
+        public async Task<BaseResponse<ProductDto>> UpdateProduct(Guid Id, UpdateProduct request)
         {
             var item = await _dbContext.Products.FirstOrDefaultAsync(x => x.Id == Id);
             if (item == null)
@@ -184,7 +181,6 @@ namespace HotelManagementSystem.Implementation.Services
             item.Id = request.Id;
             item.Name = request.Name;
             item.Price = request.Price;
-            item.Items = request.Items;
             _dbContext.Products.Add(item);
 
             if (await _dbContext.SaveChangesAsync() > 0)
@@ -205,5 +201,8 @@ namespace HotelManagementSystem.Implementation.Services
                 };
             }
         }
+
+
+
     }
 }

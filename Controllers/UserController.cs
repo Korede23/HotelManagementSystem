@@ -1,5 +1,6 @@
 ﻿using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Implementation.Interface;
+using HotelManagementSystem.Implementation.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelManagementSystem.Controllers
@@ -51,16 +52,16 @@ namespace HotelManagementSystem.Controllers
 
 
         [HttpGet("edit-user/{id}")]
-        public async Task<IActionResult> EditUser([FromRoute] int id)
+        public async Task<IActionResult> EditUser([FromRoute] Guid id)
         {
             var user = await _userServices.GetUserAsync(id);
 
             return View(user.Data);
         }
 
-
-        [HttpPost("edit-user")]
-        public async Task<IActionResult> UpdateUser(UpdateUser request)
+         
+        [HttpPost("edit-user/{id}")]
+        public async Task<IActionResult> EditUser(UpdateUser request)
         {
            var user = await _userServices.UpdateUser(request.Id, request);
             if (user.Success)
@@ -72,15 +73,16 @@ namespace HotelManagementSystem.Controllers
 
 
         [HttpGet("delete-user/{id}")]
-        public async Task<IActionResult> DeleteUser([FromRoute] int id)
+        public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
         {
             var user = await _userServices.DeleteUserAsync(id);
             if (user.Success)
             {
-                return View(user);
+                return RedirectToAction("Index", "User");
             }
-            return BadRequest();
+            return BadRequest(user);
         }
+
 
 
         [HttpGet("get-all-user-created")]
@@ -98,7 +100,7 @@ namespace HotelManagementSystem.Controllers
 
 
         [HttpGet("get-user-by-id/{id}")]
-        public async Task<IActionResult> GetUserByIdAsync(int id)
+        public async Task<IActionResult> GetUserByIdAsync(Guid id)
         {
             var user = await _userServices.GetUserByIdAsync(id);
             if (user.Success)

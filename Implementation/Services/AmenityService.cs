@@ -47,7 +47,7 @@ namespace HMS.Implementation.Services
         }
 
 
-        public async Task<BaseResponse<Guid>> DeleteAmenity(int Id)
+        public async Task<BaseResponse<Guid>> DeleteAmenity(Guid Id)
         {
             var amenity = await _dbContext.Amenities.FirstOrDefaultAsync();
             if (amenity != null)
@@ -83,13 +83,13 @@ namespace HMS.Implementation.Services
                 //.Include(x => x.RoomType)
                 .Select(x => new AmenityDto()
                 {
-                     AmenityName = x.AmenityName,
-
+                    AmenityName = x.AmenityName,
+                    AmenityType = x.AmenityType,
 
                 }).ToList();
         }
 
-        public async Task<BaseResponse<IList<AmenityDto>>> GetAmenityBYId(int Id)
+        public async Task<BaseResponse<IList<AmenityDto>>> GetAmenityBYId(Guid Id)
         {
             var amenity = await _dbContext.Amenities
             .Where(x => x.Id == Id)
@@ -119,7 +119,7 @@ namespace HMS.Implementation.Services
         }
 
 
-        public async Task<BaseResponse<AmenityDto>> GetAmenityAsync(int Id)
+        public async Task<BaseResponse<AmenityDto>> GetAmenityAsync(Guid Id)
         {
             var roomAmenity = await _dbContext.Amenities.FirstOrDefaultAsync(x => x.Id == Id);
             if (roomAmenity != null)
@@ -130,8 +130,8 @@ namespace HMS.Implementation.Services
                     Success = true,
                     Data = new AmenityDto
                     {
-                         AmenityName = roomAmenity.AmenityName,
-                          AmenityType = roomAmenity.AmenityType
+                        AmenityName = roomAmenity.AmenityName,
+                        AmenityType = roomAmenity.AmenityType
                     }
 
                 };
@@ -170,9 +170,9 @@ namespace HMS.Implementation.Services
             }
         }
 
-        public async Task<BaseResponse<AmenityDto>> UpdateAmenity (int Id , UpdateAmenity request)
+        public async Task<BaseResponse<AmenityDto>> UpdateAmenity(Guid Id, UpdateAmenity request)
         {
-            var amenity = await _dbContext.Amenities.FirstOrDefaultAsync(x => x.Id == Id);
+            var amenity = await _dbContext.Amenities.FirstOrDefaultAsync();
             if (amenity == null)
             {
                 return new BaseResponse<AmenityDto>

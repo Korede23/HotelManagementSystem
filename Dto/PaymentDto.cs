@@ -2,8 +2,8 @@
 {
     public class PaymentDto
     {
-        public int PaymentId { get; set; }
-        public int BookingId { get; set; }
+        public Guid PaymentId { get; set; }
+        public Guid BookingId { get; set; }
         public string? PaymentMethod { get; set; }
         public DateTime PaymentDate { get; set; }
         public decimal Amount { get; set; }

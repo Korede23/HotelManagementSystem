@@ -21,7 +21,7 @@ namespace HotelManagementSystem.Implementation.Services
         }
 
 
-        public async Task<BaseResponse<Guid>> CreateBooking(CreateBooking request , int Id)
+        public async Task<BaseResponse<Guid>> CreateBooking(CreateBooking request, Guid Id)
         {
             if (request != null)
             {
@@ -40,19 +40,19 @@ namespace HotelManagementSystem.Implementation.Services
                 //}
 
 
-                //foreach (var room in request.Rooms)
-                //{
-                //    var roomDetails = await _roomService.GetRoomsByIdAsync(room.RoomId);
-                //    if (roomDetails == null)
-                //    {
-                //        return new BaseResponse<Guid>
-                //        {
-                //            Success = false,
-                //            Message = "Booking Failed. The room is not available.",
-                //            Hasherror = true
-                //        };
-                //    }
-                //}
+                foreach (var room in request.Rooms)
+                {
+                    var roomDetails = await _roomService.GetRoomsByIdAsync(room.RoomId);
+                    if (roomDetails == null)
+                    {
+                        return new BaseResponse<Guid>
+                        {
+                            Success = false,
+                            Message = "Booking Failed. The room is not available.",
+                            Hasherror = true
+                        };
+                    }
+                }
 
                 var existingBooking = _dbContext.Bookings.FirstOrDefault(x =>
                    //x.CheckIn == request.CheckIn &&
@@ -65,7 +65,7 @@ namespace HotelManagementSystem.Implementation.Services
                     return new BaseResponse<Guid>
                     {
                         Success = true,
-                        Message = $"Booking already exists.",
+                        Message = "Booking already exists.",
                         Hasherror = true
                     };
 
@@ -76,6 +76,7 @@ namespace HotelManagementSystem.Implementation.Services
                     //CheckIn = request.CheckIn,
                     // Checkout = request.Checkout,
                     Status = request.Status,
+                    RoomId = request.RoomId,
                     TotalCost = request.TotalCost,
 
                 };
@@ -120,10 +121,11 @@ namespace HotelManagementSystem.Implementation.Services
                 //.Include(x => x.RoomType)
                 .Select(x => new BookingDto()
                 {
-                   // Id = x.Id,
+                    // Id = x.Id,
                     CheckIn = x.CheckIn,
                     Checkout = x.Checkout,
-                    Status = x.Status
+                    Status = x.Status,
+                    Rooms = x.Rooms
 
 
                 }).ToList();
@@ -131,7 +133,7 @@ namespace HotelManagementSystem.Implementation.Services
 
 
 
-        public async Task<BaseResponse<Guid>> DeleteBookingAsync(int Id)
+        public async Task<BaseResponse<Guid>> DeleteBookingAsync(Guid Id)
         {
             var booking = _dbContext.Bookings.FirstOrDefault();
             if (booking != null)
@@ -159,7 +161,43 @@ namespace HotelManagementSystem.Implementation.Services
 
 
 
-        public async Task<BaseResponse<BookingDto>> GetBookingAsync(int Id)
+        //public List<SelectRoomDto> GetRoomSelect()
+        //{
+        //    var roomName = _dbContext.Rooms.ToList();
+
+        //    var result = new List<SelectRoomDto>();
+
+        //    if (roomName.Count > 0)
+        //    {
+        //        result = roomName.Select(x => new SelectRoomDto()
+        //        {
+        //            Id = x.Id,
+        //            RoomName = x.RoomName,
+        //        }).ToList();
+        //    } 
+
+        //    return result;
+        //}
+
+        public List<SelectRoomDto> GetRoomSelect()
+        {
+            var roomName = _dbContext.Rooms.ToList();
+            var result = new List<SelectRoomDto>();
+
+            if (roomName.Count > 0)
+            {
+                result = roomName.Select(x => new SelectRoomDto()
+                {
+                    Id = x.Id,
+                    RoomName = x.RoomName,
+                }).ToList();
+            }
+
+            return result;
+        }
+
+
+        public async Task<BaseResponse<BookingDto>> GetBookingAsync(Guid Id)
         {
             var booking = await _dbContext.Bookings.FirstOrDefaultAsync(x => x.Id == Id);
             if (booking != null)
@@ -186,7 +224,7 @@ namespace HotelManagementSystem.Implementation.Services
         }
 
 
-        public async Task<BaseResponse<IList<BookingDto>>> GetBookingByIdAsync(int Id)
+        public async Task<BaseResponse<IList<BookingDto>>> GetBookingByIdAsync(Guid Id)
         {
             var bookings = await _dbContext.Bookings
              .Where(x => x.Id == Id)
@@ -252,10 +290,10 @@ namespace HotelManagementSystem.Implementation.Services
                 };
             }
         }
-       
-        public async Task<BaseResponse<BookingDto>> UpdateBooking(int Id, UpdateBooking request)
+
+        public async Task<BaseResponse<BookingDto>> UpdateBooking(Guid Id, UpdateBooking request)
         {
-            var booking = _dbContext.Bookings.FirstOrDefault(x => x.Id == Id);
+            var booking = _dbContext.Bookings.FirstOrDefault();
             if (booking == null)
             {
                 return new BaseResponse<BookingDto>

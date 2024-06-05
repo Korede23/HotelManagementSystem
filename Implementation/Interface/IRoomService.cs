@@ -8,11 +8,11 @@ namespace HotelManagementSystem.Implementation.Interface
     {
         Task<BaseResponse<Guid>> CreateRoom(CreateRoom request);
         Task<List<RoomDto>> GetRoom();
-        Task<BaseResponse<Guid>> DeleteRoomAsync(int Id);
-        Task<BaseResponse<RoomDto>> GetRoomAsync(int Id);
+        Task<BaseResponse<Guid>> DeleteRoomAsync(Guid Id);
+        Task<BaseResponse<RoomDto>> GetRoomAsync(Guid Id);
         Task<BaseResponse<IList<RoomDto>>> GetAllRoomsCreatedAsync();
-        Task<BaseResponse<IList<RoomDto>>> GetRoomsByIdAsync(int Id);
-        Task<BaseResponse<RoomDto>> UpdateRoom(int Id, UpdateRoom request);
+        Task<BaseResponse<IList<RoomDto>>> GetRoomsByIdAsync(Guid Id);
+        Task<BaseResponse<RoomDto>> UpdateRoom(Guid Id, UpdateRoom request);
         Task<List<SelectAmenity>> GetAmenity();
 
     }

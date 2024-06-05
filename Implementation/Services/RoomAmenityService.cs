@@ -48,7 +48,7 @@ namespace HMS.Implementation.Services
         }
 
 
-        public async Task<BaseResponse<IList<Guid>>> DeleteRoomAmenity(int Id)
+        public async Task<BaseResponse<IList<Guid>>> DeleteRoomAmenity(Guid Id)
         {
             var roomAmenity = await _dbContext.RoomAmenities.FirstOrDefaultAsync(x => x.Id == Id);
             if (roomAmenity != null)

@@ -7,11 +7,11 @@ namespace HMS.Implementation.Interface
     public interface IAmenityService
     {
         Task<BaseResponse<IList<AmenityDto>>> CreateAmenity(CreateAmenityRequestModel request);
-        Task<BaseResponse<Guid>> DeleteAmenity(int Id);
-        Task<BaseResponse<IList<AmenityDto>>> GetAmenityBYId(int Id);
+        Task<BaseResponse<Guid>> DeleteAmenity(Guid Id);
+        Task<BaseResponse<IList<AmenityDto>>> GetAmenityBYId(Guid Id);
         Task<BaseResponse<IList<AmenityDto>>> GetAllAmenity();
-        Task<BaseResponse<AmenityDto>> UpdateAmenity(int Id, UpdateAmenity request);
-        Task<BaseResponse<AmenityDto>> GetAmenityAsync(int Id);
+        Task<BaseResponse<AmenityDto>> UpdateAmenity(Guid Id, UpdateAmenity request);
+        Task<BaseResponse<AmenityDto>> GetAmenityAsync(Guid Id);
         Task<List<AmenityDto>> GetAmenity();
     }
 }

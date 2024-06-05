@@ -48,15 +48,15 @@ namespace HMS.Controllers
 
 
         [HttpGet("edit-customer/{id}")]
-        public async Task<IActionResult> EditCustomer([FromRoute] int id)
+        public async Task<IActionResult> EditCustomer([FromRoute] Guid id)
         {
             var customer = await _customerServices.GetCustomerAsync(id);
 
             return View(customer.Data);
         }
 
-        [HttpPost("edit-customer")]
-        public async Task<IActionResult> UpdateCustomer(UpdateCustomer request)
+        [HttpPost("edit-customer/{id}")]
+        public async Task<IActionResult> EditCustomer(UpdateCustomer request)
         {
             var customer = await _customerServices.UpdateCustomer(request.Id, request);
             if (customer.Success)
@@ -68,15 +68,15 @@ namespace HMS.Controllers
 
 
         [HttpGet("delete-customer/{id}")]
-        public async Task<IActionResult> DeleteCustomer([FromRoute] int id)
+        public async Task<IActionResult> DeleteCustomer([FromRoute] Guid Id)
         {
-            var customer = await _customerServices.DeleteCustomerAsync(id);
+            var customer = await _customerServices.DeleteCustomerAsync(Id);
             if (customer.Success)
             {
-                return View(customer);
+                return RedirectToAction("Index", "Customer");
             }
 
-            return BadRequest();
+            return BadRequest(customer);
 
         }
 
@@ -98,7 +98,7 @@ namespace HMS.Controllers
 
 
         [HttpGet("get-customer-by-id/{id}")]
-        public async Task<IActionResult> GetCustomerByIdAsync(int id)
+        public async Task<IActionResult> GetCustomerByIdAsync(Guid id)
         {
             var customer = await _customerServices.GetCustomerByIdAsync(id);
             if (customer.Success)

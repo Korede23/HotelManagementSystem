@@ -7,11 +7,11 @@ namespace HotelManagementSystem.Implementation.Interface
     public interface ICustomerServices
     {
         Task<BaseResponse<Guid>> CreateCustomer(CreateCustomer request);
-        Task<BaseResponse<Guid>> DeleteCustomerAsync(int Id);
-        Task<BaseResponse<IList<CustomerDto>>> GetCustomerByIdAsync(int Id);
-        Task<BaseResponse<CustomerDto>> GetCustomerAsync(int Id);
+        Task<BaseResponse<Guid>> DeleteCustomerAsync(Guid Id);
+        Task<BaseResponse<IList<CustomerDto>>> GetCustomerByIdAsync(Guid Id);
+        Task<BaseResponse<CustomerDto>> GetCustomerAsync(Guid Id);
         Task<BaseResponse<IList<CustomerDto>>> GetAllCustomerCreatedAsync();
-        Task<BaseResponse<CustomerDto>> UpdateCustomer(int Id, UpdateCustomer request);
+        Task<BaseResponse<CustomerDto>> UpdateCustomer(Guid Id, UpdateCustomer request);
         Task<List<CustomerDto>> GetCustomer();
     }
 }

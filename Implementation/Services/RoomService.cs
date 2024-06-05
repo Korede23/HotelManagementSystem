@@ -51,9 +51,10 @@ namespace HotelManagementSystem.Implementation.Services
                     RoomRate = request.RoomRate,
                     RoomStatus = request.RoomStatus,
                     BedType = request.BedType,
+                     //RoomId = request.RoomId,
                     RoomType = request.RoomType,
                     MaxOccupancy = request.MaxOccupancy,
-                   // Amenity = request.Amenity
+                    //Amenities = request.AmenityName,
                 };
 
                 await _dbContext.Rooms.AddAsync(room);
@@ -96,7 +97,7 @@ namespace HotelManagementSystem.Implementation.Services
         }
 
 
-        public async Task<BaseResponse<Guid>> DeleteRoomAsync(int Id)
+        public async Task<BaseResponse<Guid>> DeleteRoomAsync(Guid Id)
         {
             var room = await _dbContext.Rooms.FirstOrDefaultAsync();
             if (room != null)
@@ -117,7 +118,7 @@ namespace HotelManagementSystem.Implementation.Services
                 Message = $"Failed to delete room with {Id}.The room may not exist or there was an error in the deletion process."
             };
         }
-        public async Task<BaseResponse<RoomDto>> GetRoomAsync(int Id)
+        public async Task<BaseResponse<RoomDto>> GetRoomAsync(Guid Id)
         {
             var room = await _dbContext.Rooms.FirstOrDefaultAsync(x => x.Id == Id);
             if (room != null)
@@ -180,7 +181,7 @@ namespace HotelManagementSystem.Implementation.Services
 
 
 
-        public async Task<BaseResponse<IList<RoomDto>>> GetRoomsByIdAsync(int Id)
+        public async Task<BaseResponse<IList<RoomDto>>> GetRoomsByIdAsync(Guid Id)
         {
 
             var rooms = await _dbContext.Rooms
@@ -221,7 +222,7 @@ namespace HotelManagementSystem.Implementation.Services
 
 
 
-        public async Task<BaseResponse<RoomDto>> UpdateRoom(int Id, UpdateRoom request)
+        public async Task<BaseResponse<RoomDto>> UpdateRoom(Guid Id, UpdateRoom request)
         {
             var room = _dbContext.Rooms.FirstOrDefault(x => x.Id == Id);
             if (room == null)
@@ -268,16 +269,15 @@ namespace HotelManagementSystem.Implementation.Services
             var result = new List<SelectAmenity>();
             if (amenities.Count > 0)
             {
-
                 result = amenities.Select(x => new SelectAmenity
                 {
-                    Id = x.AmenityId,
-                    // Name = x.Amenity,
+                    Id = x.AmenityId, 
+                    AmenityName = x.Amenity
                 }).ToList();
-
             }
             return result;
         }
+
 
     }
 }

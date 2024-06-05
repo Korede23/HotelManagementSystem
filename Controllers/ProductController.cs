@@ -3,6 +3,7 @@ using HotelManagementSystem.Dto;
 using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Dto.ResponseModel;
 using HotelManagementSystem.Implementation.Interface;
+using HotelManagementSystem.Implementation.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelManagementSystem.Controllers
@@ -51,7 +52,7 @@ namespace HotelManagementSystem.Controllers
 
 
         [HttpGet("edit-product/{id}")]
-        public async Task<IActionResult> EditProduct([FromRoute] int id)
+        public async Task<IActionResult> EditProduct([FromRoute] Guid id)
         {
             var product = await _productServices.GetProductAsync(id);
 
@@ -75,9 +76,9 @@ namespace HotelManagementSystem.Controllers
 
 
         [HttpGet("delete-product/{id}")]
-        public async Task<IActionResult> DeleteProduct([FromRoute] int id)
+        public async Task<IActionResult> DeleteProduct([FromRoute] Guid Id)
         {
-            var product = await _productServices.DeleteProductAsync(id);
+            var product = await _productServices.DeleteProductAsync(Id);
             if (product.Success)
             {
                 return RedirectToAction("Index", "Product");
@@ -105,7 +106,7 @@ namespace HotelManagementSystem.Controllers
         }
 
         [HttpGet("get-product-by-id/{id}")]
-        public async Task<IActionResult> GetAllProductById(int id)
+        public async Task<IActionResult> GetAllProductById(Guid id)
         {
             var product = await _productServices.GetAllProductsByIdAsync(id);
             if (product.Success == false)

@@ -10,12 +10,14 @@ namespace HotelManagementSystem.Dto.RequestModel
         //public DateTime Checkout { get; set; }
         public RoomStatus Status { get; set; }
         public decimal TotalCost { get; set; }
+        public Guid RoomId { get; set; }
         public ICollection<Room> Rooms { get; set; } = new List<Room>();
+      
         public class Room
         {
-            public int RoomId { get; set; }
-            public RoomType RoomType { get; set; }
+            public Guid RoomId { get; set; }
+           // public RoomType RoomType { get; set; }
         }
     }
-    
+
 }

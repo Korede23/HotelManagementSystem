@@ -6,13 +6,14 @@ namespace HotelManagementSystem.Implementation.Interface
 {
     public interface IBookingServices
     {
-        Task<BaseResponse<Guid>> CreateBooking(CreateBooking request, int Id);
-        Task<BaseResponse<Guid>> DeleteBookingAsync(int Id);
-        Task<BaseResponse<IList<BookingDto>>> GetBookingByIdAsync(int Id);
+        Task<BaseResponse<Guid>> CreateBooking(CreateBooking request, Guid Id);
+        Task<BaseResponse<Guid>> DeleteBookingAsync(Guid Id);
+        Task<BaseResponse<IList<BookingDto>>> GetBookingByIdAsync(Guid Id);
         Task<BaseResponse<IList<BookingDto>>> GetAllBookingsAsync();
-        Task<BaseResponse<BookingDto>> UpdateBooking(int Id, UpdateBooking request);
-        Task<BaseResponse<BookingDto>> GetBookingAsync(int Id);
+        Task<BaseResponse<BookingDto>> UpdateBooking(Guid Id, UpdateBooking request);
+        Task<BaseResponse<BookingDto>> GetBookingAsync(Guid Id);
         Task<List<BookingDto>> GetBooking();
+        List<SelectRoomDto> GetRoomSelect();
 
 
 
