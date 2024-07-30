@@ -1,81 +1,74 @@
 ﻿@model HotelManagementSystem.Dto.RoomDto
+
 @{
-    Layout = "_Layout";
+    Layout = "_AdminLayout";
     ViewData["Title"] = "Edit Room";
 }
 
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-12 col-12">
+            <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4">Edit Room</h6>
+                <form asp-controller="Room" asp-action="UpdateRoom">
 
+                    <div class="row">
+                        <div class="col mb-6">
+                            <label class="form-label">Room Name</label>
+                            <input type="text" class="form-control" name="roomName" value="@Model.RoomName" aria-describedby="room name">
+                        </div>
+                        <div class="col mb-6">
+                            <label class="form-label">Room Number</label>
+                            <input type="text" class="form-control" name="RoomNumber" value="@Model.RoomNumber">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label">Room Type</label>
+                            <select name="RoomType" class="form-select" asp-items="Html.GetEnumSelectList<HotelManagementSystem.Model.Entity.Enum.RoomType>()">
+                                <option value="">Select Room Type</option>
+                            </select>
+                        </div>
+                        <div class="col mb-3">
+                            <label class="form-label">Bed Type</label>
+                            <select name="BedType" class="form-select" asp-items="Html.GetEnumSelectList<HotelManagementSystem.Model.Entity.Enum.BedType>()">
+                                <option value="">Select Bed Type</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label">Maximum Occupancy</label>
+                            <input type="text" class="form-control" name="MaxOccupancy" value="@Model.MaxOccupancy">
+                        </div>
+                        <div class="col mb-3">
+                            <label class="form-label">Room Rate</label>
+                            <input type="text" class="form-control" name="RoomRate" value="@Model.RoomRate">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label">Room Amenities</label>
+                            <select name="RoomId" class="form-select" asp-items="@(ViewData["SelectAmenity"] as IEnumerable<SelectListItem>)" required>
+                                <option value="">Select RoomAmenity</option>
+                            </select>
+                        </div>
 
-<h4>Edit Room</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="UpdateRoom" asp-controller="Room">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            <div class="form-group">
-                <label asp-for="RoomName" class="control-label"></label>
-                <input asp-for="RoomName" class="form-control" />
-                <span asp-validation-for="RoomName" class="text-danger"></span>
+                        <div class="col mb-3">
+                            <label class="form-label">Room Status</label>
+                            <select name="RoomStatus" class="form-select" asp-items="Html.GetEnumSelectList<HotelManagementSystem.Model.Entity.Enum.RoomStatus>()">
+                                <option value="">Select Room Status</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" name="availability">
+                        <label class="form-check-label">Availability</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                    <a href="@Url.Action("Rooms","Room")" class="btn btn-dark">Show All</a>
+                </form>
             </div>
-            <div class="form-group" hidden="hidden">
-                <label asp-for="Id" class="control-label"></label>
-                <input asp-for="Id" class="form-control" />
-                <span asp-validation-for="Id" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="RoomNumber" class="control-label"></label>
-                <input asp-for="RoomNumber" class="form-control" />
-                <span asp-validation-for="RoomNumber" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="RoomType" class="control-label"></label>
-                <input asp-for="RoomType" class="form-control" />
-                <span asp-validation-for="RoomType" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="BedType" class="control-label"></label>
-                <input asp-for="BedType" class="form-control" />
-                <span asp-validation-for="BedType" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="MaxOccupancy" class="control-label"></label>
-                <input asp-for="MaxOccupancy" class="form-control" />
-                <span asp-validation-for="MaxOccupancy" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="RoomRate" class="control-label"></label>
-                <input asp-for="RoomRate" class="form-control" />
-                <span asp-validation-for="RoomRate" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="RoomStatus" class="control-label"></label>
-                <input asp-for="RoomStatus" class="form-control" />
-                <span asp-validation-for="RoomStatus" class="text-danger"></span>
-            </div>
-
-          @*   <div class="form-group">m
-                <label asp-for="Availability" class="control-label"></label>
-                <input asp-for="Availability" class="form-control" />
-                <span asp-validation-for="Availability" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                <label asp-for="SelectedAmenityId" class="control-label"></label>
-                <select asp-for="SelectedAmenityId" class="form-control" asp-items="ViewBag.Amenities"></select>
-                <span asp-validation-for="SelectedAmenityId" class="text-danger"></span>
-            </div> *@
-
-            <div class="form-group">
-               @*  <input type="submit" value="Save" class="btn btn-primary" /> *@
-                <input type="submit" value="Save" class="btn btn-primary" />
-               @*  </button><a asp-controller="Room" asp-action="Index" class="btn btn-secondary"> Back to List</a> *@
-            </div>
-        </form>
+        </div>
     </div>
 </div>

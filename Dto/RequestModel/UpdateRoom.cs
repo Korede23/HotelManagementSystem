@@ -13,6 +13,7 @@ namespace HotelManagementSystem.Dto.RequestModel
         public int MaxOccupancy { get; set; }
         public decimal RoomRate { get; set; }
         public RoomStatus RoomStatus { get; set; }
+        public byte[] Image { get; set; }
         //public Amenity Amenity { get; set; }
     }
 }

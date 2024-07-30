@@ -1,0 +1,45 @@
+﻿@model HotelManagementSystem.Dto.BookingDto
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Booking Details";
+}
+
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-secondary text-center rounded p-4">
+        <h3>Booking Details</h3>
+        <div class="table-responsive">
+            @if (Model != null)
+            {
+                <table class="table text-start align-middle table-bordered table-hover mb-0">
+                    <tbody>
+                        <tr>
+                            <th scope="row">PhoneNumber</th>
+                            <td>@Model.PhoneNumber</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Room</th>
+                            <td>@Model.Rooms.RoomName</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Email</th>
+                            <td>@Model.Email</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Status</th>
+                            <td>@Model.Status</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">TotalCost</th>
+                            <td>@Model.TotalCost</td>
+                        </tr>
+                    </tbody>
+                </table>
+            }
+            else
+            {
+            <p>Customer details are not available.</p>
+            }
+            <a href="@Url.Action("Bookings", "Booking")" class="btn btn-primary mt-3">Back to List</a>
+        </div>
+    </div>
+</div>

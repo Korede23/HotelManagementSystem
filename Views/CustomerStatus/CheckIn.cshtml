@@ -1,0 +1,38 @@
+﻿@model HotelManagementSystem.Dto.CustomerStatusDto
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Check In";
+}
+
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-12">
+            <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4">Check In</h6>
+                <form asp-controller="CustomerStatus" asp-action="CheckIn" method="post">
+                    <div class="row">
+
+                        <div class="col mb-6">
+                            <label class="form-label">Customer</label>
+                            <select class="form-select" asp-for="CustomerId" asp-items="@(ViewBag.Customers as SelectList)" required>
+                                <option value="">Select Customer</option>
+                            </select>
+                        </div>
+                        <div class="col mb-6">
+                            <div class="col mb-12">
+                                <label class="form-label">Check-In Date</label>
+                                <input type="date" class="form-control" asp-for="CheckInDate" required>
+                            </div>
+                        </div>
+                       
+                    </div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">Check In</button>
+                        <a href="@Url.Action("CustomerStatus","CustomerStatus")" class="btn btn-dark ms-2">Show All</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+ 

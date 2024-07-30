@@ -11,113 +11,138 @@ namespace HotelManagementSystem.Implementation.Services
     public class RoomService : IRoomService
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly IImageService _imageService;
 
-        public RoomService(ApplicationDbContext dbContext)
+        public RoomService(ApplicationDbContext dbContext, IImageService imageService)
         {
 
             _dbContext = dbContext;
+            _imageService = imageService;
         }
+
         public async Task<BaseResponse<Guid>> CreateRoom(CreateRoom request)
         {
-
-
-            if (request != null)
+            try
             {
-                // Check if the room already exists
-                var existingRoom = _dbContext.Rooms.FirstOrDefault(x =>
-                    x.RoomName == request.RoomName &&
-                    x.RoomNumber == request.RoomNumber &&
-                    x.RoomType == request.RoomType &&
-                    x.RoomStatus == request.RoomStatus);
-
-                if (existingRoom != null)
+                if (request != null)
                 {
-                    // Room already exists
+                    // Check if the room already exists
+                    var existingRoom = await _dbContext.Rooms.FirstOrDefaultAsync(x =>
+                        x.Id == request.RoomId);
+
+                    if (existingRoom != null)
+                    {
+                        // Room already exists
+                        return new BaseResponse<Guid>
+                        {
+                            Success = true,
+                            Message = $"Room {request.RoomName} already exists.",
+                            Hasherror = true
+                        };
+                    }
+
+                    var amenity = await _dbContext.Amenities.FirstOrDefaultAsync(a => a.Id == request.AmenityId);
+                    if (amenity == null)
+                    {
+                        return new BaseResponse<Guid>
+                        {
+                            Success = false,
+                            Message = $"Amenity with ID {request.AmenityId} does not exist.",
+                            Hasherror = true
+                        };
+                    }
+
+                    // Create a new room
+                    var room = new Room
+                    {
+                        RoomName = request.RoomName,
+                        Availability = request.Availability,
+                        RoomNumber = request.RoomNumber,
+                        RoomRate = request.RoomRate,
+                        RoomStatus = request.RoomStatus,
+                        BedType = request.BedType,
+                        RoomType = request.RoomType,
+                        MaxOccupancy = request.MaxOccupancy,
+                        AmenityId = request.AmenityId,
+                        Amenity = request.Amenity,
+                    };
+
+                    await _dbContext.Rooms.AddAsync(room);
+                    var result = await _dbContext.SaveChangesAsync();
+
+                    if (result > 0)
+                    {
+                        await _imageService.AddImagesAsync(request.Images, room.Id);
+                    }
                     return new BaseResponse<Guid>
                     {
                         Success = true,
-                        Message = $"Room {request.RoomName} already exists.",
-                        Hasherror = true
+                        Message = $"Room {request.RoomName} created successfully.",
+                        Data = room.Id
                     };
-
                 }
 
-                //create a new one
-                var room = new Room
+                return new BaseResponse<Guid>
                 {
-                    RoomName = request.RoomName,
-                    Availability = request.Availability,
-                    RoomNumber = request.RoomNumber,
-                    RoomRate = request.RoomRate,
-                    RoomStatus = request.RoomStatus,
-                    BedType = request.BedType,
-                     //RoomId = request.RoomId,
-                    RoomType = request.RoomType,
-                    MaxOccupancy = request.MaxOccupancy,
-                    //Amenities = request.AmenityName,
+                    Success = false,
+                    Message = "Invalid request."
                 };
-
-                await _dbContext.Rooms.AddAsync(room);
-                _dbContext.SaveChanges();
             }
-            return new BaseResponse<Guid>
-            {
-                Success = true,
-                Message = $"Room {request.RoomName} Created Successfully"
-
-            };
-
-
-
-        }
-
-
-
-
-        public async Task<List<RoomDto>> GetRoom()
-        {
-            return _dbContext.Rooms
-                .Include(x => x.Amenities)
-                //.Include(x => x.RoomType)
-                .Select(x => new RoomDto()
-                {
-                    Id = x.Id,
-                    RoomType = x.RoomType,
-                    RoomName = x.RoomName,
-                    Availability = x.Availability,
-                    MaxOccupancy = x.MaxOccupancy,
-                    BedType = x.BedType,
-                    RoomNumber = x.RoomNumber,
-                    RoomRate = x.RoomRate,
-                    RoomStatus = x.RoomStatus,
-                    //Amenity = x.Amenity
-
-
-                }).ToList();
-        }
-
-
-        public async Task<BaseResponse<Guid>> DeleteRoomAsync(Guid Id)
-        {
-            var room = await _dbContext.Rooms.FirstOrDefaultAsync();
-            if (room != null)
-            {
-                _dbContext.Rooms.Remove(room);
-            }
-            if (await _dbContext.SaveChangesAsync() > 0)
+            catch (Exception ex)
             {
                 return new BaseResponse<Guid>
                 {
-                    Success = true,
-                    Message = $"Room  Number {Id} has been deleted succesfully "
+                    Success = false,
+                    Message = $"Room creation failed: {ex.Message}"
                 };
             }
-            return new BaseResponse<Guid>
-            {
-                Success = false,
-                Message = $"Failed to delete room with {Id}.The room may not exist or there was an error in the deletion process."
-            };
         }
+
+        public async Task<BaseResponse<Guid>> DeleteRoomAsync(Guid Id)
+        {
+            try
+            {
+                var room = await _dbContext.Rooms.FirstOrDefaultAsync(r => r.Id == Id);
+                if (room == null)
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = $"Room not found."
+                    };
+                }
+
+                _dbContext.Rooms.Remove(room);
+                if (await _dbContext.SaveChangesAsync() > 0)
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = true,
+                        Message = $"Room  has been deleted successfully.",
+                        Data = Id
+                    };
+                }
+                else
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = $"Failed to delete room.There was an error in the deletion process."
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse<Guid>
+                {
+                    Success = false,
+                    Message = $"An error occurred while deleting the room : {ex.Message}"
+                };
+            }
+        }
+
+
+
         public async Task<BaseResponse<RoomDto>> GetRoomAsync(Guid Id)
         {
             var room = await _dbContext.Rooms.FirstOrDefaultAsync(x => x.Id == Id);
@@ -139,7 +164,6 @@ namespace HotelManagementSystem.Implementation.Services
                         RoomName = room.RoomName,
                         RoomStatus = room.RoomStatus,
                         RoomType = room.RoomType,
-                       // Amenity  = room.Amenity
                     }
 
                 };
@@ -152,9 +176,29 @@ namespace HotelManagementSystem.Implementation.Services
             };
         }
 
-        public async Task<BaseResponse<IList<RoomDto>>> GetAllRoomsCreatedAsync()
+        public List<SelectAmenityDto> GetAmenitySelect()
         {
-            var rooms = await _dbContext.Rooms
+            var amenityName = _dbContext.Amenities.ToList();
+            var result = new List<SelectAmenityDto>();
+
+            if (amenityName.Count > 0)
+            {
+                result = amenityName.Select(x => new SelectAmenityDto()
+                {
+                    Id = x.Id,
+                    AmenityName = x.AmenityName,
+                }).ToList();
+            }
+
+            return result;
+        }
+
+
+        public async Task<List<RoomDto>> GetAllRoomsCreatedAsync()
+        {
+            return await _dbContext.Rooms
+              .Include(x => x.Amenity)
+              .Include(x => x.Images)
              .Select(x => new RoomDto()
              {
                  Id = x.Id,
@@ -166,22 +210,17 @@ namespace HotelManagementSystem.Implementation.Services
                  BedType = x.BedType,
                  RoomType = x.RoomType,
                  MaxOccupancy = x.MaxOccupancy,
-                // Amenity = x.Amenity
+                 AmenityName = x.Amenity.AmenityName,
+                 Images = x.Images.Select(x => new Dto.ImageDto
+                 {
+                     Id = x.Id,
+                     ImagePath = x.ImagePath,
+                 }).ToList()
              }).ToListAsync();
-
-
-            return new BaseResponse<IList<RoomDto>>
-            {
-                Success = true,
-                Message = "Rooms Succesfully Retrieved",
-                Data = rooms
-            };
         }
 
 
-
-
-        public async Task<BaseResponse<IList<RoomDto>>> GetRoomsByIdAsync(Guid Id)
+        public async Task<BaseResponse<RoomDto>> GetRoomsByIdAsync(Guid Id)
         {
 
             var rooms = await _dbContext.Rooms
@@ -197,24 +236,29 @@ namespace HotelManagementSystem.Implementation.Services
                  BedType = x.BedType,
                  RoomType = x.RoomType,
                  MaxOccupancy = x.MaxOccupancy,
-                // Amenity = x.Amenity
-             }).ToListAsync();
+                 AmenityName = x.Amenity.AmenityName,
+                 Images = x.Images.Select(x => new Dto.ImageDto
+                 {
+                     Id = x.Id,
+                     ImagePath = x.ImagePath,
+                 }).ToList()
+             }).FirstOrDefaultAsync();
             if (rooms != null)
             {
-                return new BaseResponse<IList<RoomDto>>
+                return new BaseResponse<RoomDto>
                 {
                     Success = true,
-                    Message = $"Room {Id} Retrieved succesfully",
-
+                    Message = $"Room Retrieved succesfully",
+                    Data = rooms
 
                 };
             }
             else
             {
-                return new BaseResponse<IList<RoomDto>>
+                return new BaseResponse<RoomDto>
                 {
                     Success = false,
-                    Message = $"Room {Id} Retrieval Failed"
+                    Message = $"Room Retrieval Failed"
                 };
             }
 
@@ -224,58 +268,59 @@ namespace HotelManagementSystem.Implementation.Services
 
         public async Task<BaseResponse<RoomDto>> UpdateRoom(Guid Id, UpdateRoom request)
         {
-            var room = _dbContext.Rooms.FirstOrDefault(x => x.Id == Id);
-            if (room == null)
+            try
+            {
+                var room = _dbContext.Rooms.FirstOrDefault(x => x.Id == Id);
+                if (room == null)
+                {
+                    return new BaseResponse<RoomDto>
+                    {
+                        Success = false,
+                        Message = $"Room {request.RoomName} Update failed",
+                        Hasherror = true
+                    };
+
+                }
+                room.RoomNumber = request.RoomNumber;
+                room.RoomName = request.RoomName;
+                room.RoomRate = request.RoomRate;
+                room.RoomStatus = request.RoomStatus;
+                room.BedType = request.BedType;
+                room.RoomType = request.RoomType;
+                room.MaxOccupancy = request.MaxOccupancy;
+                room.RoomStatus = request.RoomStatus;
+                // room.Amenity = request.Amenity;
+                _dbContext.Rooms.Update(room);
+                if (await _dbContext.SaveChangesAsync() > 0)
+                {
+                    return new BaseResponse<RoomDto>
+                    {
+                        Success = true,
+                        Message = $"Room {request.RoomName} Updated Succesfully",
+                    };
+
+                }
+                else
+                {
+                    return new BaseResponse<RoomDto>
+                    {
+                        Success = false,
+                        Message = $"Room {request.RoomName} Update failed",
+                        Hasherror = true
+                    };
+                }
+            }
+            catch (Exception ex)
             {
                 return new BaseResponse<RoomDto>
                 {
                     Success = false,
-                    Message = $"Room {request.RoomName} Update failed",
+                    Message = $"Room {request.Id} Update failed",
                     Hasherror = true
                 };
-
             }
-            room.RoomNumber = request.RoomNumber;
-            room.RoomName = request.RoomName;
-            room.RoomRate = request.RoomRate;
-            room.RoomStatus = request.RoomStatus;
-            room.BedType = request.BedType;
-            room.RoomType = request.RoomType;
-            room.MaxOccupancy = request.MaxOccupancy;
-            room.RoomStatus = request.RoomStatus;
-           // room.Amenity = request.Amenity;
-            _dbContext.Rooms.Update(room);
-            if (await _dbContext.SaveChangesAsync() > 0)
-            {
-                return new BaseResponse<RoomDto>
-                {
-                    Success = true,
-                    Message = $"Room {request.Id} Updated Succesfully",
-                };
-
-            }
-            return new BaseResponse<RoomDto>
-            {
-                Success = false,
-                Message = $"Room {request.Id} Update failed",
-                Hasherror = true
-            };
-        }
 
 
-        public async Task<List<SelectAmenity>> GetAmenity()
-        {
-            var amenities = await _dbContext.RoomAmenities.ToListAsync();
-            var result = new List<SelectAmenity>();
-            if (amenities.Count > 0)
-            {
-                result = amenities.Select(x => new SelectAmenity
-                {
-                    Id = x.AmenityId, 
-                    AmenityName = x.Amenity
-                }).ToList();
-            }
-            return result;
         }
 
 

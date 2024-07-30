@@ -1,0 +1,56 @@
+﻿@model IEnumerable<HotelManagementSystem.Dto.ProductDto>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Product";
+}
+<!-- Recent Sales Start -->
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-secondary text-center rounded p-4">
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <a href="@Url.Action("CreateProduct","Product")" class="mb-0">Create Product</a>
+            </div>
+        }
+        
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table text-start align-middle table-bordered table-hover mb-0">
+                    <thead>
+                        <tr class="text-white">
+                            <th scope="col"><input class="form-check-input" type="checkbox"></th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Price </th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><input class="form-check-input" type="checkbox"></td>
+                                <td>@item.Name</td>
+                                <td>@item.Price</td>
+                                <td>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <a asp-action="EditProduct" asp-route-id="@item.Id">Edit <bold>|</bold> </a>
+                                        <a asp-action="DeleteProduct" asp-route-id-="@item.Id">Delete <bold>|</bold></a>
+                                    }
+                                    <a asp-action="GetAllProductById" asp-route-id="@item.Id">ViewDetails</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <h3>No product available</h3>
+        }
+    </div>
+</div>
+<!-- Recent Sales End
+

@@ -1,19 +1,24 @@
-﻿using HMS.Implementation.Interface;
+﻿using AspNetCoreHero.ToastNotification.Abstractions;
+using HMS.Implementation.Interface;
 using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Implementation.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+[Authorize]
 public class AmenityController : Controller
 {
-    private readonly IAmenityService _amenityService;
 
-    public AmenityController(IAmenityService amenityService)
+    private readonly IAmenityService _amenityService;
+    private readonly INotyfService _notyf;
+
+    public AmenityController(IAmenityService amenityService ,INotyfService notyf)
     {
         _amenityService = amenityService;
+        _notyf = notyf;
     }
 
     [HttpGet("get-amenity")]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Amenities()
     {
         var amenity = await _amenityService.GetAmenity();
         return View(amenity);
@@ -21,7 +26,7 @@ public class AmenityController : Controller
 
 
     [HttpGet("create-amenity")]
-    public async Task<IActionResult> Create()
+    public async Task<IActionResult> CreateAmenity()
     {
         var amenity = await _amenityService.GetAllAmenity();
         if (amenity.Success)
@@ -41,8 +46,10 @@ public class AmenityController : Controller
         var amenity = await _amenityService.CreateAmenity(request);
         if (amenity.Success)
         {
-            return RedirectToAction("Index");
+            _notyf.Success(amenity.Message, 3);
+            return RedirectToAction("Amenities");
         }
+        _notyf.Error(amenity.Message);
         return BadRequest();
     }
 
@@ -63,8 +70,10 @@ public class AmenityController : Controller
         var amenity = await _amenityService.UpdateAmenity(request.Id, request);
         if (amenity.Success)
         {
-            return RedirectToAction("Index" , "Amenity");
+            _notyf.Success(amenity.Message, 3);
+            return RedirectToAction("Amenities", "Amenity");
         }
+        _notyf.Error(amenity.Message);
         return View(request);
     }
 
@@ -77,9 +86,10 @@ public class AmenityController : Controller
         var amenity = await _amenityService.DeleteAmenity(id);
         if (amenity.Success)
         {
-            return RedirectToAction("Index", "Amenity");
+            _notyf.Success(amenity.Message, 3);
+            return RedirectToAction("Amenities", "Amenity");
         }
-
+        _notyf.Error(amenity.Message);
         return BadRequest(amenity);
 
     }
@@ -101,18 +111,17 @@ public class AmenityController : Controller
 
     }
 
-    [HttpGet("get-booking-by-id/{id}")]
-    public async Task<IActionResult> GetAllAmenity() 
-    {
-        var amenity = await _amenityService.GetAllAmenity();
-        if (amenity.Success == false)
+    [HttpGet("get-amenity-by-id/{id}")]
+    public async Task<IActionResult> GetAmenityBYId(Guid Id) 
         {
-            return Ok(amenity);
-        }
-        else
+        var amenity = await _amenityService.GetAmenityBYId( Id);
+        if (amenity.Success)
         {
-            return BadRequest(amenity);
+            _notyf.Success(amenity.Message, 3);
+            return View(amenity.Data);
         }
+        _notyf.Error(amenity.Message);
+        return RedirectToAction("Amenities");
     }
 
 

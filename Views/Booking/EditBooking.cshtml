@@ -1,53 +1,41 @@
 ﻿@model HotelManagementSystem.Dto.RequestModel.UpdateBooking
 @{
-    Layout = "_Layout";
+    Layout = "_AdminLayout";
     ViewData["Title"] = "Edit Room";
 }
 
 
-
-<h4>Edit Booking</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="EditBooking" asp-controller="Booking">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-            @* <div class="form-group">
-                <label asp-for="CheckIn" class="control-label"></label>
-                <input asp-for="CheckIn" class="form-control" />
-                <span asp-validation-for="CheckIn" class="text-danger"></span>
-            </div> *@
-            <div class="form-group" hidden="hidden">
-                <label asp-for="Id" class="control-label"></label>
-                <input asp-for="Id" class="form-control" />
-                <span asp-validation-for="Id" class="text-danger"></span>
-            </div>
-          @*   <div class="form-group">
-                <label asp-for="Checkout" class="control-label"></label>
-                <input asp-for="Checkout" class="form-control" />
-                <span asp-validation-for="Checkout" class="text-danger"></span>
-            </div> *@
-
-            <div class="col-md-6" style="margin-top: 20px; font-size: large; font-weight: medium; color:dark;">
-                <label asp-for="RoomId"></label>
-                <select asp-for="RoomId" class="form-control" asp-items="@(ViewData["SelectRoom"] as IEnumerable<SelectListItem>)" required>
-                    <option value="">Select Room</option>
-                </select>
-            </div>
-
-
-            <div class="form-group">
-                <label asp-for="TotalCost"></label>
-                <input asp-for="TotalCost" class="form-control" />
-                <span asp-validation-for="TotalCost" class="text-danger"></span>
-            </div>
-
-            <div class="form-group">
-                @*  <input type="submit" value="Save" class="btn btn-primary" /> *@
-                <input type="submit" value="Save" class="btn btn-primary" />
-                @*  </button><a asp-controller="Room" asp-action="Index" class="btn btn-secondary"> Back to List</a> *@
-            </div>
-        </form>
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-12 col-12">
+            <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4">Create Booking</h6>
+                <form asp-controller="Booking" asp-action="EditBooking">
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label">Room </label>
+                            <select asp-for="RoomId" class="form-select" asp-items="@(ViewData["SelectRoom"] as IEnumerable<SelectListItem>)" required>
+                                <option value="">Select Room</option>
+                            </select>
+                             <div class="col mb-6">
+                            <label class="form-label">Email</label>
+                            <input type="text" class="form-control" name="Email">
+                        </div>
+                        </div>
+                    </div
+                    <div class="col mb-3">
+                         <div class="col mb-6">
+                            <label class="form-label">PhoneNumber</label>
+                            <input type="text" class="form-control" name="PhoneNumber">
+                        </div>
+                        <label class="form-label">Total Amount</label>
+                            <input type="text" class="form-control" name="Total Amount">
+                    </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a href="@Url.Action("Bookings","Booking")" class="btn btn-dark">Show All</a>
+            </form>
+        </div>
     </div>
 </div>
+</div>
+

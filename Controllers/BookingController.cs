@@ -1,34 +1,39 @@
-﻿using HotelManagementSystem.Dto;
+﻿using AspNetCoreHero.ToastNotification.Abstractions;
+using HotelManagementSystem.Dto;
 using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Implementation.Interface;
 using HotelManagementSystem.Model.Entity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace HotelManagementSystem.Controllers
 {
+    [Authorize]
     public class BookingController : Controller
     {
         private readonly IBookingServices _bookService;
         private readonly IRoomService _roomService;
+        private readonly INotyfService _notyf;
 
-        public BookingController(IBookingServices bookService, IRoomService roomService)
+        public BookingController(IBookingServices bookService, IRoomService roomService , INotyfService notyf)
         {
             _bookService = bookService;
             _roomService = roomService;
+            _notyf = notyf;
         }
 
         [HttpGet("get-booking")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Bookings()
         {
-            var response = await _bookService.GetBooking();
-            return View(response);
+            var book = await _bookService.GetBooking();
+            return View(book);
         }
 
 
 
         [HttpGet("create-booking")]
-        public IActionResult Create()
+        public IActionResult CreateBooking()
         {
             var selectRoom = _bookService.GetRoomSelect();
             if (selectRoom == null)
@@ -42,19 +47,22 @@ namespace HotelManagementSystem.Controllers
 
 
         [HttpPost("create-booking")]
-        public async Task<IActionResult> CreateBooking(CreateBooking request, Guid Id)
+        public async Task<IActionResult> CreateBooking(CreateBooking request)
         {
-            var booking = await _bookService.CreateBooking(request, Id);
+            var booking = await _bookService.CreateBooking(request);
             if (booking.Success)
             {
-                return RedirectToAction("Index");
+                _notyf.Success(booking.Message, 3);
+                return RedirectToAction("Bookings");
             }
+            _notyf.Error(booking.Message);
             return BadRequest();
         }
 
 
+
         [HttpGet("edit-booking/{id}")]
-        public async Task<IActionResult> EditBooking([FromRoute] Guid id)
+        public IActionResult EditBooking([FromRoute] Guid id)
         {
             var selectRoom = _bookService.GetRoomSelect();
             if (selectRoom == null)
@@ -65,7 +73,7 @@ namespace HotelManagementSystem.Controllers
             return View();
         }
 
-       
+
 
 
         [HttpPost("edit-booking/{id}")]
@@ -75,8 +83,10 @@ namespace HotelManagementSystem.Controllers
             var booking = await _bookService.UpdateBooking(request.Id, request);
             if (booking.Success)
             {
-                return RedirectToAction("Index");
+                _notyf.Success(booking.Message, 3);
+                return RedirectToAction("Bookings");
             }
+            _notyf.Error(booking.Message);
             return View("Booking");
         }
 
@@ -89,9 +99,10 @@ namespace HotelManagementSystem.Controllers
             var booking = await _bookService.DeleteBookingAsync(id);
             if (booking.Success)
             {
-                return RedirectToAction("Index", "Booking");
+                _notyf.Success(booking.Message, 3);
+                return RedirectToAction("Bookings", "Booking");
             }
-
+            _notyf.Error(booking.Message);
             return BadRequest(booking);
 
         }
@@ -101,32 +112,27 @@ namespace HotelManagementSystem.Controllers
         public async Task<IActionResult> GetAllBookingsAsync()
         {
             var bookings = await _bookService.GetAllBookingsAsync();
-            if (bookings.Success == false)
+            if (bookings.Success)
             {
-                return Ok(bookings);
+                return View(bookings);
             }
-            else
-            {
                 return BadRequest(bookings);
-            }
-
-
         }
 
         [HttpGet("get-booking-by-id/{id}")]
-        public async Task<IActionResult> GetBookingByIdAsync(Guid id)
+        public async Task<IActionResult> GetBookingById(Guid id)
         {
             var bookings = await _bookService.GetBookingByIdAsync(id);
-            if (bookings.Success == false)
+            if (bookings != null)
             {
-                return Ok(bookings);
+                _notyf.Success(bookings.Message, 3);
+                return View(bookings.Data);
             }
-            else
-            {
-                return BadRequest(bookings);
-            }
+            _notyf.Error(bookings?.Message);
+            return RedirectToAction("Bookings");
         }
 
+       
 
     }
 }

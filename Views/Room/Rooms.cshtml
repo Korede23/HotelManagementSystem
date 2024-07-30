@@ -1,0 +1,70 @@
+﻿@using HotelManagementSystem.Dto
+@using HotelManagementSystem.Dto.RequestModel
+@model IEnumerable<HotelManagementSystem.Dto.RoomDto>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Rooms";
+}
+<!-- Recent Sales Start -->
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-secondary text-center rounded p-4">
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="d-flex align-items-center justify-content-between mb-4">
+                <a href="@Url.Action("CreateRoom","Room")" class="mb-0">Create Room</a>
+            </div>
+        }
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table text-start align-middle table-bordered table-hover mb-0">
+                    <thead>
+                        <tr class="text-white">
+                            <th scope="col"><input class="form-check-input" type="checkbox"></th>
+                            <th scope="col">Room Name</th>
+                            <th scope="col">Room Number</th>
+                            <th scope="col">Room Type</th>
+                            <th scope="col">Bed Type</th>
+                            <th scope="col">Max Occupancy</th>
+                            <th scope="col">Room Rate</th>
+                            <th scope="col">Room Status</th>
+                            <th scope="col">Room Amenities</th>
+                            <th scope="col">Availability</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><input class="form-check-input" type="checkbox"></td>
+                                <td>@item.RoomName</td>
+                                <td>@item.RoomNumber</td>
+                                <td>@item.RoomType</td>
+                                <td>@item.BedType</td>
+                                <td>@item.MaxOccupancy</td>
+                                <td>@item.RoomRate</td>
+                                <td>@item.RoomStatus</td>
+                                <td>@item.AmenityName</td>
+                                <td>@item.Availability</td>
+                                <td>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <a asp-action="EditRoom" asp-route-id="@item.Id">Edit | </a>
+                                        <a asp-action="DeleteRoom" asp-route-id-="@item.Id">Delete |</a>
+                                    }
+                                    <a asp-action="GetRoomsById" asp-route-id="@item.Id">ViewDetails |</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <h3>No rooms available</h3>
+        }
+    </div>
+</div>
+<!-- Recent Sales End -->

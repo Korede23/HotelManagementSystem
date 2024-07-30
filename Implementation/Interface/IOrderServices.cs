@@ -8,10 +8,11 @@ namespace HotelManagementSystem.Implementation.Interface
     {
         Task<BaseResponse<Guid>> CreateOrder(CreateOrder request);
         Task<BaseResponse<Guid>> DeleteOrderAsync(Guid Id);
-        Task<BaseResponse<IList<OrderDto>>> GetOrderByIdAsync(Guid Id);
+        Task<BaseResponse<OrderDto>> GetOrderByIdAsync(Guid Id);
         Task<BaseResponse<OrderDto>> GetOrderAsync(Guid Id);
         Task<BaseResponse<IList<OrderDto>>> GetAllOrderAsync();
         Task<BaseResponse<IList<OrderDto>>> UpdateOrder(Guid Id, UpdateOrder request);
         Task<List<OrderDto>> GetOrder();
+        List<SelectProductDto> GetProductSelect();
     }
 }

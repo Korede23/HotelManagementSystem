@@ -1,0 +1,82 @@
+﻿@model HotelManagementSystem.Dto.RequestModel.CreateRoom
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Create room";
+}
+
+
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-12 col-12">
+            <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4">Create Room</h6>
+                <form asp-controller="Room" asp-action="CreateRoom" enctype="multipart/form-data">
+
+                    <div class="row">
+                        <div class="col mb-6">
+                            <label class="form-label">Room Name</label>
+                            <input type="text" class="form-control" name="roomName" aria-describedby="room name">
+                        </div>
+                        <div class="col mb-6">
+                            <label class="form-label">Room Number</label>
+                            <input type="text" class="form-control" name="RoomNumber">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label">Room Type</label>
+                            <select name="RoomType" class="form-select" asp-items="Html.GetEnumSelectList<HotelManagementSystem.Model.Entity.Enum.RoomType>()">
+                                <option value="">Select Room Type</option>
+                            </select>
+                        </div>
+                        <div class="col mb-3">
+                            <label class="form-label">Bed Type</label>
+                            <select asp-for="BedType" class="form-select" asp-items="Html.GetEnumSelectList<HotelManagementSystem.Model.Entity.Enum.BedType>()">
+                                <option value="">Select Bed Type</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label">Maximum Occupancy</label>
+                            <input type="text" class="form-control" name="MaxOccupancy">
+                        </div>
+                        <div class="col mb-3">
+                            <label class="form-label">Room Rate</label>
+                            <input type="text" class="form-control" name="RoomRate">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label">Room Amenities</label>
+                            <select asp-for="AmenityId" class="form-select" asp-items="@(ViewData["SelectAmenity"] as IEnumerable<SelectListItem>)" required>
+                                <option value="">Select RoomAmenity</option>
+                            </select>
+                        </div>
+                        <div class="col mb-3">
+                            <label class="form-label">Upload Image</label>
+                            <input type="file" class="form-control" name="Images" multiple>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-3">
+                            <label class="form-label">Room Status</label>
+                            <select asp-for="RoomStatus" class="form-select" asp-items="Html.GetEnumSelectList<HotelManagementSystem.Model.Entity.Enum.RoomStatus>()">
+                                <option value="">Select Room Status</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col mb-3 form-check">
+                        <label class="form-label">Availability</label>
+                        <select asp-for="Availability" class="form-select" asp-items="Html.GetEnumSelectList<HotelManagementSystem.Model.Entity.Enum.RoomAvailability>()">
+                            <option value="">Room Availability</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                    <a href="@Url.Action("Rooms","Room")" class="btn btn-dark">Show All</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

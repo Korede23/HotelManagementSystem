@@ -1,0 +1,63 @@
+﻿@model HotelManagementSystem.Dto.RequestModel.CreateBooking
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Create Booking";
+}
+
+
+
+@if (!User.IsInRole("Admin"))
+{
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-12 col-12">
+                <div class="bg-secondary rounded h-100 p-4">
+                    <div class="alert alert-info mb-4">
+                        <h4 class="alert-heading">Welcome @User.Identity.Name!</h4>
+                        <p>We are delighted to offer you a seamless booking experience. Choose from our exquisite rooms and start your journey to relaxation and luxury. Book now to secure your perfect stay!</p>
+                        <hr>
+                        <p class="mb-0">Just a few clicks away from your memorable stay. Let's get started!</p>
+                    </div>
+                    <h6 class="mb-4">Create Booking</h6>
+                    <form asp-controller="Booking" asp-action="CreateBooking">
+                        <div class="row">
+                            <div class="col mb-3">
+                                <label class="form-label">Room </label>
+                                <select asp-for="RoomId" class="form-select" asp-items="@(ViewData["SelectRoom"] as IEnumerable<SelectListItem>)" required>
+                                    <option value="">Select Room</option>
+                                </select>
+                            </div>
+                            <div class="col mb-3">
+                                <div class="col mb-6">
+                                    <label class="form-label">Email</label>
+                                    <input type="text" class="form-control" name="Email">
+                                </div>
+                            </div>
+                            <div class="col mb-3">
+                                <div class="col mb-6">
+                                    <label class="form-label">PhoneNumber</label>
+                                    <input type="text" class="form-control" name="PhoneNumber">
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                    <a href="@Url.Action("Index", "Admin")" class="btn btn-primary mt-3 float-end">Home Page</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container-fluid pt-4 px-4">
+        <div class="row g-4">
+            <div class="col-12 col-12">
+                <div class="bg-secondary rounded h-100 p-4">
+                    <p class="text-white">Admins are not allowed to create bookings. If you need to create a booking, please log in as a customer or contact support for assistance.</p>
+                    <a href="@Url.Action("Index", "Admin")" class="btn btn-primary mt-3 float-end">Home Page</a>
+                </div>
+            </div>
+        </div>
+    </div>
+}

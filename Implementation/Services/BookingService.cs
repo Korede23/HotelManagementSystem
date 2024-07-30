@@ -1,4 +1,6 @@
-﻿using HotelManagementSystem.Dto;
+﻿using Azure.Core;
+using HMS.Implementation.Services;
+using HotelManagementSystem.Dto;
 using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Dto.ResponseModel;
 using HotelManagementSystem.Implementation.Interface;
@@ -11,87 +13,69 @@ namespace HotelManagementSystem.Implementation.Services
     {
         private readonly ApplicationDbContext _dbContext;
         private readonly ICustomerServices _customerServices;
-        private readonly IRoomService _roomService;
 
-        public BookingService(ApplicationDbContext dbContext, ICustomerServices customerServices, IRoomService roomService)
+        public BookingService(ApplicationDbContext dbContext, ICustomerServices customerServices)
         {
             _dbContext = dbContext;
             _customerServices = customerServices;
-            _roomService = roomService;
         }
 
 
-        public async Task<BaseResponse<Guid>> CreateBooking(CreateBooking request, Guid Id)
+        public async Task<BaseResponse<Guid>> CreateBooking(CreateBooking request)
         {
-            if (request != null)
+            try
             {
+                // Retrieve the product from the database
+                var room = await _dbContext.Rooms.FindAsync(request.RoomId);
+                if (room == null)
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "Room not found",
+                        Hasherror = true
+                    };
+                }
 
-                // Check if the customer is registered
 
-                //var customer = await _customerServices.GetCustomerByIdAsync(Id);
-                //if (customer.Data == null)
+                //foreach (var room in request.Rooms)
                 //{
-                //    return new BaseResponse<Guid>
+                //    var roomDetails = await _roomService.GetRoomByIdAsync(room.RoomId);
+                //    if (roomDetails == null)
                 //    {
-                //        Success = false,
-                //        Message = "Booking Failed. Customer is not registered.",
-                //        //Hasherror = true
-                //    };
+                //        return new BaseResponse<Guid>
+                //        {
+                //            Success = false,
+                //            Message = "Booking Failed. The room is not available.",
+                //            Hasherror = true
+                //        };
+                //    }
                 //}
 
 
-                foreach (var room in request.Rooms)
-                {
-                    var roomDetails = await _roomService.GetRoomsByIdAsync(room.RoomId);
-                    if (roomDetails == null)
-                    {
-                        return new BaseResponse<Guid>
-                        {
-                            Success = false,
-                            Message = "Booking Failed. The room is not available.",
-                            Hasherror = true
-                        };
-                    }
-                }
-
-                var existingBooking = _dbContext.Bookings.FirstOrDefault(x =>
-                   //x.CheckIn == request.CheckIn &&
-                   //x.Checkout == request.Checkout &&
-                   x.Status == request.Status);
-
-                if (existingBooking != null)
-                {
-                    // Booking already exists
-                    return new BaseResponse<Guid>
-                    {
-                        Success = true,
-                        Message = "Booking already exists.",
-                        Hasherror = true
-                    };
-
-                }
 
                 var booking = new Booking()
                 {
-                    //CheckIn = request.CheckIn,
-                    // Checkout = request.Checkout,
-                    Status = request.Status,
                     RoomId = request.RoomId,
-                    TotalCost = request.TotalCost,
-
+                    CustomerId = request.CustomerId,
+                    Email = request.Email,
+                    PhoneNumber = request.PhoneNumber,
+                    TotalCost = room.RoomRate,
+                    // Rooms = request.Rooms.Select(r => new Room { RoomId = r.RoomId }).ToList()
                 };
+
                 _dbContext.Bookings.Add(booking);
-
-
 
                 if (await _dbContext.SaveChangesAsync() > 0)
                 {
                     return new BaseResponse<Guid>
                     {
                         Success = true,
-                        Message = "Your booking  has been successful"
+                        Message = "Your booking has been successful",
+                        Data = booking.Id
                     };
                 }
+
                 else
                 {
                     return new BaseResponse<Guid>
@@ -102,7 +86,7 @@ namespace HotelManagementSystem.Implementation.Services
                     };
                 }
             }
-            else
+            catch (Exception ex)
             {
                 return new BaseResponse<Guid>
                 {
@@ -121,35 +105,47 @@ namespace HotelManagementSystem.Implementation.Services
                 //.Include(x => x.RoomType)
                 .Select(x => new BookingDto()
                 {
-                    // Id = x.Id,
-                    CheckIn = x.CheckIn,
-                    Checkout = x.Checkout,
-                    Status = x.Status,
-                    Rooms = x.Rooms
-
+                    Id = x.Id,
+                    RoomId = x.RoomId,
+                    Email = x.Email,
+                    PhoneNumber = x.PhoneNumber,
+                    TotalCost = x.TotalCost,
+                    RoomName = x.Rooms.RoomName,
 
                 }).ToList();
         }
 
 
-
         public async Task<BaseResponse<Guid>> DeleteBookingAsync(Guid Id)
         {
-            var booking = _dbContext.Bookings.FirstOrDefault();
-            if (booking != null)
+            try
             {
-                _dbContext.Bookings.Remove(booking);
-            }
-            if (await _dbContext.SaveChangesAsync() > 0)
-            {
-                return new BaseResponse<Guid>
+                var booking = _dbContext.Bookings.FirstOrDefault();
+                if (booking != null)
                 {
-                    Success = true,
-                    Message = $"Booking {Id} Has been Deleted Succesfully"
-                };
+                    _dbContext.Bookings.Remove(booking);
+                }
+                if (await _dbContext.SaveChangesAsync() > 0)
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = true,
+                        Message = $"Booking {Id} Has been Deleted Succesfully"
+                    };
+                }
+                else
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = $"Delete Failed unable to process the deletion of  booking {Id} at this time",
+                        Hasherror = true
+                    };
+                }
             }
-            else
+            catch
             {
+
                 return new BaseResponse<Guid>
                 {
                     Success = false,
@@ -157,27 +153,9 @@ namespace HotelManagementSystem.Implementation.Services
                     Hasherror = true
                 };
             }
+
+
         }
-
-
-
-        //public List<SelectRoomDto> GetRoomSelect()
-        //{
-        //    var roomName = _dbContext.Rooms.ToList();
-
-        //    var result = new List<SelectRoomDto>();
-
-        //    if (roomName.Count > 0)
-        //    {
-        //        result = roomName.Select(x => new SelectRoomDto()
-        //        {
-        //            Id = x.Id,
-        //            RoomName = x.RoomName,
-        //        }).ToList();
-        //    } 
-
-        //    return result;
-        //}
 
         public List<SelectRoomDto> GetRoomSelect()
         {
@@ -197,6 +175,7 @@ namespace HotelManagementSystem.Implementation.Services
         }
 
 
+
         public async Task<BaseResponse<BookingDto>> GetBookingAsync(Guid Id)
         {
             var booking = await _dbContext.Bookings.FirstOrDefaultAsync(x => x.Id == Id);
@@ -209,9 +188,10 @@ namespace HotelManagementSystem.Implementation.Services
                     Data = new BookingDto
                     {
                         TotalCost = booking.TotalCost,
-                        CheckIn = booking.CheckIn,
-                        Status = booking.Status,
-                        Checkout = booking.Checkout
+                        RoomId = booking.RoomId,
+                        Email = booking.Email,
+                        PhoneNumber = booking.PhoneNumber,
+                        RoomName = booking.Rooms.RoomName,
                     }
 
                 };
@@ -224,22 +204,26 @@ namespace HotelManagementSystem.Implementation.Services
         }
 
 
-        public async Task<BaseResponse<IList<BookingDto>>> GetBookingByIdAsync(Guid Id)
+
+        public async Task<BaseResponse<BookingDto>> GetBookingByIdAsync(Guid Id)
         {
             var bookings = await _dbContext.Bookings
              .Where(x => x.Id == Id)
              .Select(x => new BookingDto()
              {
 
-                 CheckIn = x.CheckIn,
-                 Checkout = x.Checkout,
-                 Status = x.Status,
+                 //CheckIn = x.CheckIn,
+                 //Checkout = x.Checkout,
+                 Id = x.Id,
+                 Rooms = x.Rooms,
+                 RoomId = x.RoomId,
+                 Email = x.Email,
+                 PhoneNumber = x.PhoneNumber,
                  TotalCost = x.TotalCost,
-                 //  Id = x.RoomId,
-             }).ToListAsync();
+             }).FirstOrDefaultAsync();
             if (bookings != null)
             {
-                return new BaseResponse<IList<BookingDto>>
+                return new BaseResponse<BookingDto>
                 {
                     Success = true,
                     Message = "Bookings Retrieved Succesfully",
@@ -248,7 +232,7 @@ namespace HotelManagementSystem.Implementation.Services
             }
             else
             {
-                return new BaseResponse<IList<BookingDto>>
+                return new BaseResponse<BookingDto>
                 {
                     Success = false,
                     Message = "Booking Retrieved Failed",
@@ -264,11 +248,10 @@ namespace HotelManagementSystem.Implementation.Services
             .Select(x => new BookingDto()
             {
 
-                CheckIn = x.CheckIn,
-                Checkout = x.Checkout,
-                Status = x.Status,
                 TotalCost = x.TotalCost,
-                // RoomId = x.RoomId,
+                RoomId = x.RoomId,
+                Email = x.Email,
+                PhoneNumber = x.PhoneNumber,
             }).ToListAsync();
             if (booking != null)
             {
@@ -291,32 +274,57 @@ namespace HotelManagementSystem.Implementation.Services
             }
         }
 
+
         public async Task<BaseResponse<BookingDto>> UpdateBooking(Guid Id, UpdateBooking request)
         {
-            var booking = _dbContext.Bookings.FirstOrDefault();
-            if (booking == null)
+            try
             {
-                return new BaseResponse<BookingDto>
+                var booking = _dbContext.Bookings.FirstOrDefault();
+                if (booking == null)
                 {
-                    Success = true,
-                    Message = $"Booking {Id} Updated Succesfully"
-                };
-            }
-            //booking.CheckIn = request.CheckIn;
-            //booking.Checkout = request.Checkout;
-            booking.Status = request.Status;
-            booking.TotalCost = request.TotalCost;
-            _dbContext.Bookings.Update(booking);
+                    return new BaseResponse<BookingDto>
+                    {
+                        Success = true,
+                        Message = $"Booking {Id} Updated Succesfully"
+                    };
+                }
+                var room = await _dbContext.Rooms.FindAsync(request.RoomId);
+                {
+                    if (room == null)
+                    {
+                        return new BaseResponse<BookingDto>
+                        {
+                            Success = true,
+                            Message = "Room not Found"
+                        };
+                    }
 
-            if (await _dbContext.SaveChangesAsync() > 0)
-            {
-                return new BaseResponse<BookingDto>
+                }
+                booking.TotalCost = room.RoomRate;
+                booking.RoomId = request.RoomId;
+                booking.PhoneNumber = request.PhoneNumber;
+                booking.Email = request.Email;
+                _dbContext.Bookings.Update(booking);
+
+                if (await _dbContext.SaveChangesAsync() > 0)
                 {
-                    Success = true,
-                    Message = $"Booking {Id} Updated Succesfully"
-                };
+                    return new BaseResponse<BookingDto>
+                    {
+                        Success = true,
+                        Message = $"Booking {Id} Updated Succesfully"
+                    };
+                }
+                else
+                {
+                    return new BaseResponse<BookingDto>
+                    {
+                        Success = false,
+                        Message = $"Booking {Id} Update Failed",
+                        Hasherror = false
+                    };
+                }
             }
-            else
+            catch (Exception ex)
             {
                 return new BaseResponse<BookingDto>
                 {
@@ -326,7 +334,5 @@ namespace HotelManagementSystem.Implementation.Services
                 };
             }
         }
-
-
     }
 }

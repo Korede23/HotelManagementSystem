@@ -1,42 +1,44 @@
-﻿using HotelManagementSystem.Dto;
+﻿using AspNetCoreHero.ToastNotification.Abstractions;
 using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Implementation.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace HotelManagementSystem.Controllers
 {
-
+    [Authorize]
     public class OrderController : Controller
     {
         private readonly IOrderServices _orderServices;
-        public OrderController(IOrderServices orderServices)
+        private readonly INotyfService _notyf;
+
+        public OrderController(IOrderServices orderServices , INotyfService notyf)
         {
             _orderServices = orderServices;
-           
+            _notyf = notyf;
         }
 
 
         [HttpGet("get-order")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Orders()
         {
             var order = await _orderServices.GetOrder();
             return View(order);
            // return View(new List<OrderDto>());
         }
 
-        
-        public async Task<IActionResult> Create()
+        [HttpGet("create-order")]
+        public IActionResult CreateOrder()
         {
-            var order = await _orderServices.GetAllOrderAsync();
-            if (order.Success)
-            {
-                
-                return View();
-            }
-            return BadRequest();
+            var products = _orderServices.GetProductSelect();
+            ViewBag.Products = new SelectList(products, "Id", "ProductName");
+
+            return View();
         }
 
 
+        
 
         [HttpPost("create-order")]
         public async Task<IActionResult> CreateOrder(CreateOrder request)
@@ -44,8 +46,10 @@ namespace HotelManagementSystem.Controllers
             var order = await _orderServices.CreateOrder(request);
             if (order.Success)
             {
-                return RedirectToAction("Index");
+                _notyf.Success(order.Message, 3);
+                return RedirectToAction("Orders");
             }
+            _notyf.Error(order.Message);
             return BadRequest();
         }
 
@@ -54,6 +58,8 @@ namespace HotelManagementSystem.Controllers
         public async Task<IActionResult> EditOrder([FromRoute] Guid id)
         {
             var order = await _orderServices.GetOrderAsync(id);
+            var products = _orderServices.GetProductSelect();
+            ViewBag.Products = new SelectList(products, "Id", "ProductName");
 
             return View(order.Data);
         }
@@ -63,11 +69,13 @@ namespace HotelManagementSystem.Controllers
         public async Task<IActionResult> EditOrder(UpdateOrder request)
         {
 
-            var order = await _orderServices.UpdateOrder(request.CustomerId, request);
+            var order = await _orderServices.UpdateOrder(request.Id, request);
             if (order.Success)
             {
-                return RedirectToAction("Index");
+                _notyf.Success(order.Message, 3);
+                return RedirectToAction("Orders");
             }
+            _notyf.Error(order.Message);
             return View(request);
         }
 
@@ -75,14 +83,15 @@ namespace HotelManagementSystem.Controllers
 
 
         [HttpGet("delete-order/{id}")]
-        public async Task<IActionResult> Deleteorder([FromRoute] Guid id)
+        public async Task<IActionResult> DeleteOrder([FromRoute] Guid id)
         {
             var order = await _orderServices.DeleteOrderAsync(id);
             if (order.Success)
             {
-                return RedirectToAction("Index", "Order");
+                _notyf.Success(order.Message, 3);
+                return RedirectToAction("Orders", "Order");
             }
-
+            _notyf.Error(order.Message);
             return BadRequest(order);
 
         }
@@ -101,24 +110,23 @@ namespace HotelManagementSystem.Controllers
                 return BadRequest(order);
             }
 
-
         }
 
-        [HttpGet("get-order-by-id/{id}")]
-        public async Task<IActionResult> GetAllOrderById(Guid Id)
+        [HttpGet("get-order/{id}")]
+        public async Task<IActionResult> GetOrderById(Guid id)
         {
-            var order = await _orderServices.GetOrderByIdAsync(Id);
-            if (order.Success)
+            var order = await _orderServices.GetOrderByIdAsync(id);
+            if (order != null)
             {
-                return View(order);
+                _notyf.Success(order.Message, 3);
+                return View(order.Data);
             }
-            else
-            {
-                return BadRequest(order);
-            }
+            _notyf.Error(order?.Message);
+            return RedirectToAction("Orders");
         }
 
 
+       
     }
 }
 

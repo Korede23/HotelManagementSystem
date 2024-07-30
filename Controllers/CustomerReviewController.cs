@@ -1,10 +1,12 @@
 ﻿using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Implementation.Interface;
 using HotelManagementSystem.Implementation.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HMS.Controllers
 {
+    [Authorize]
     public class CustomerReviewController : Controller
     {
         private readonly ICustomerReviewService _customerReviewService;
@@ -16,14 +18,14 @@ namespace HMS.Controllers
 
 
         [HttpGet("get-review")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Reviews()
         {
             var review = await _customerReviewService.GetReview();
             return View(review);
         }
 
-
-        public async Task<IActionResult> Create()
+        [HttpGet("create-review")]
+        public async Task<IActionResult> CreateReview()
         {
             var review = await _customerReviewService.GetAllReviewAsync();
             if (review.Success)
@@ -35,12 +37,12 @@ namespace HMS.Controllers
         }
 
         [HttpPost("create-review")]
-        public async Task<IActionResult> CreateReview(CreateReview request, Guid Id)
+        public async Task<IActionResult> CreateReview(CreateReview request, string Id)
         {
             var review = await _customerReviewService.CreateReview(request, Id);
             if (review.Success)
             {
-                return RedirectToAction("Index");
+                return RedirectToAction("Reviews");
             }
             else
             {

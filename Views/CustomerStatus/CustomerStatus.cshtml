@@ -1,0 +1,102 @@
+﻿@model IEnumerable<HotelManagementSystem.Dto.CustomerStatusDto>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Customer Status";
+}
+
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-secondary text-center rounded p-4">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <a href="@Url.Action("CheckIn", "CustomerStatus")" class="mb-0">Check-In</a>
+        </div>
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table text-start align-middle table-bordered table-hover mb-0">
+                    <thead>
+                        <tr class="text-white">
+                            <th scope="col"><input class="form-check-input" type="checkbox"></th>
+                            <th scope="col">Customer Name</th>
+                            <th scope="col">Check-In Date</th>
+                            <th scope="col">Check-Out Date</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><input class="form-check-input" type="checkbox"></td>
+                                <td>@item.CustomerName</td>
+                                <td>@item.CheckInDate</td>
+                                <td>@item.CheckOutDate</td>
+                                <td>
+                                    <a asp-action="CheckOut" asp-route-customerId="@item.CustomerId">CheckOut</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <h3>No customer statuses available</h3>
+        }
+    </div>
+</div>
+
+
+
+
+@* @model IEnumerable<HotelManagementSystem.Dto.CustomerStatusDto>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Customer Status";
+}
+
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-secondary text-center rounded p-4">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <a href="@Url.Action("CheckIn", "CustomerStatus")" class="mb-0">Check-In</a>
+        </div>
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table text-start align-middle table-bordered table-hover mb-0">
+                    <thead>
+                        <tr class="text-white">
+                            <th scope="col"><input class="form-check-input" type="checkbox"></th>
+                            <th scope="col">Customer ID</th>
+                            <th scope="col">Booking ID</th>
+                            <th scope="col">Check-In Date</th>
+                            <th scope="col">Check-Out Date</th
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><input class="form-check-input" type="checkbox"></td>
+                                <td>@item.CustomerId</td>
+                                <td>@item.BookingId</td>
+                                <td>@item.CheckInDate</td>
+                                <td>@item.CheckOutDate</td
+                                
+                                <td>
+                            <a asp-action="CheckOut" asp-route-id="@item.Id">CheckOut</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <h3>No customer statuses available</h3>
+        }
+    </div>
+</div>
+ *@

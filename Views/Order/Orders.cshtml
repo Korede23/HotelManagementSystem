@@ -1,0 +1,54 @@
+﻿@model IEnumerable<HotelManagementSystem.Dto.OrderDto>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Order";
+}
+
+<!-- Recent Sales Start -->
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-secondary text-center rounded p-4">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <a href="@Url.Action("CreateOrder","Order")" class="mb-0">Create Order</a>
+        </div>
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table text-start align-middle table-bordered table-hover mb-0">
+                    <thead>
+                        <tr class="text-white">
+                            <th scope="col"><input class="form-check-input" type="checkbox"></th>
+                            <th scope="col">Product</th>
+                            <th scope="col">OrderDate</th>
+                            <th scope="col">TotalAmount</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><input class="form-check-input" type="checkbox"></td>
+                                <td>@item.ProductName</td>
+                                <td>@item.OrderDate</td>
+                                <td>@item.TotalAmount</td>
+                                <td>
+                                    <a asp-action="EditOrder" asp-route-id="@item.Id">Edit</a> |
+                                    <a asp-action="DeleteOrder" asp-route-id="@item.Id">Delete</a> |
+                                    <a asp-controller="Order" asp-action="GetOrderById" asp-route-id="@item.Id">View Details</a>
+
+                                    
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <h3>No orders available</h3>
+        }
+    </div>
+</div>
+<!-- Recent Sales End -->
+

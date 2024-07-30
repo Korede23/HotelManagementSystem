@@ -38,6 +38,31 @@
         Worst 
 
     }
+
+    public enum PaymentMethod
+    {
+        Cash = 1,
+        Transfer
+    }
+
+    public enum PaymentStatus
+    {
+        Pending = 1,
+        Approved
+    }
+
+    public enum UserRole
+    {
+        Admin = 1,
+        Customer
+    } 
+    
+    
+    public enum RoomAvailability
+    {
+        Available = 1,
+        NotAvailable 
+    }
 }
 
 

@@ -3,7 +3,6 @@
     public class Amenity: BaseEntity
     {
         public string AmenityName { get; set; }
-        public string AmenityType { get; set; }
 
     }
 }

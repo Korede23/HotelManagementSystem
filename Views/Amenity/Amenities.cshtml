@@ -1,0 +1,50 @@
+﻿@model IEnumerable<HotelManagementSystem.Dto.AmenityDto>
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Amenity";
+}
+
+<!-- Recent Sales Start -->
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-secondary text-center rounded p-4">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <a href="@Url.Action("CreateAmenity","Amenity")" class="mb-0">Create Amenity</a>
+        </div>
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table text-start align-middle table-bordered table-hover mb-0">
+                    <thead>
+                        <tr class="text-white">
+                            <th scope="col"><input class="form-check-input" type="checkbox"></th>
+                            <th scope="col">Amenity Name</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><input class="form-check-input" type="checkbox"></td>
+                                <td>@item.AmenityName</td>
+                                <td>
+                                    <a asp-action="EditAmenity" asp-route-id="@item.Id">Edit</a> |
+                                    <a asp-action="DeleteAmenity" asp-route-id="@item.Id">Delete</a> |
+                                    <a asp-action="GetAmenityBYId" asp-route-id="@item.Id">ViewDetails</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <h3>No amenities available</h3>
+        }
+    </div>
+</div>
+<!-- Recent Sales End -->
+
+

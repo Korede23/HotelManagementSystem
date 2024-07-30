@@ -1,81 +1,79 @@
-﻿using HotelManagementSystem.Dto;
+﻿using AspNetCoreHero.ToastNotification.Abstractions;
 using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Implementation.Interface;
-using HotelManagementSystem.Model.Entity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace HMS.Controllers
+namespace HotelManagementSystem.Controllers
 {
-
-    public class CustomerController(ICustomerServices customerServices) : Controller
+    [Authorize]
+    public class CustomerController(ICustomerServices customerServices, INotyfService notyf) : Controller
     {
         private readonly ICustomerServices _customerServices = customerServices;
-
-
-        public async Task<IActionResult> Index()
+        private readonly INotyfService _notyf = notyf;
+        [AllowAnonymous]
+        [HttpGet("get-customer")]
+        public async Task<IActionResult> Customers()
+        {
+            var customer = await _customerServices.GetCustomer();
+            return View(customer);
+        }
+        [AllowAnonymous]
+        [HttpGet("create-customer")]
+        public async Task<IActionResult> CreateCustomer()
         {
             var response = await _customerServices.GetAllCustomerCreatedAsync();
             if (response.Success)
             {
-                return View(response.Data);
+                return View();
             }
-            return View(new List<CustomerDto>());
-        }
-
-
-        [HttpGet]
-        public IActionResult Create()
-        {
-            return View();
-        }
-
-
-
-        [HttpPost("create-customer")]
-        public async Task<IActionResult> CreateCustomer(CreateCustomer request)
-        {
-
-            var customer = await _customerServices.CreateCustomer(request);
-            if (customer.Success)
-            {
-                return RedirectToAction("Index");
-            }
-
             return BadRequest();
-
-
         }
+
+
+
 
 
         [HttpGet("edit-customer/{id}")]
-        public async Task<IActionResult> EditCustomer([FromRoute] Guid id)
+        public async Task<IActionResult> EditCustomer([FromRoute] string id)
         {
             var customer = await _customerServices.GetCustomerAsync(id);
-
+            _notyf.Success(customer.Message, 3);
             return View(customer.Data);
         }
 
         [HttpPost("edit-customer/{id}")]
         public async Task<IActionResult> EditCustomer(UpdateCustomer request)
         {
-            var customer = await _customerServices.UpdateCustomer(request.Id, request);
+            var customer = await _customerServices.UpdateCustomer(request.Id.ToString(), request);
             if (customer.Success)
             {
-                return RedirectToAction("Index");
+                _notyf.Success(customer.Message, 3);
+                return RedirectToAction("Customers");
             }
+            _notyf.Error(customer.Message);
             return BadRequest();
         }
 
 
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+
+
+
         [HttpGet("delete-customer/{id}")]
-        public async Task<IActionResult> DeleteCustomer([FromRoute] Guid Id)
+        public async Task<IActionResult> DeleteCustomer([FromRoute] string Id)
         {
             var customer = await _customerServices.DeleteCustomerAsync(Id);
             if (customer.Success)
             {
-                return RedirectToAction("Index", "Customer");
+                _notyf.Success(customer.Message, 3);
+                return RedirectToAction("Customers", "Customer");
             }
-
+            _notyf.Error(customer.Message);
             return BadRequest(customer);
 
         }
@@ -98,15 +96,16 @@ namespace HMS.Controllers
 
 
         [HttpGet("get-customer-by-id/{id}")]
-        public async Task<IActionResult> GetCustomerByIdAsync(Guid id)
+        public async Task<IActionResult> GetCustomerById(string id)
         {
             var customer = await _customerServices.GetCustomerByIdAsync(id);
             if (customer.Success)
             {
-                return View(customer);
+                _notyf.Success(customer.Message, 3);
+                return View(customer.Data);
             }
-
-            return BadRequest();
+            _notyf.Error(customer.Message);
+            return RedirectToAction("Customers");
 
         }
 

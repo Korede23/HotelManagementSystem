@@ -19,43 +19,57 @@ namespace HotelManagementSystem.Implementation.Services
             _customerServices = customerServices;
         }
 
-        public async Task<BaseResponse<Guid>> CreateReview(CreateReview request, Guid Id)
+        public async Task<BaseResponse<Guid>> CreateReview(CreateReview request, string Id)
         {
-            var customer = await _customerServices.GetCustomerByIdAsync(Id);
-            if (customer == null)
+            try
             {
-                return new BaseResponse<Guid>
+                var customer = await _customerServices.GetCustomerByIdAsync(Id);
+                if (customer == null)
                 {
-                    Success = false,
-                    Message = "User Not Found",
-                    Hasherror = true
-                };
-            }
-            var review = new CustomerReview
-            {
-                // CustomerId = request.Id,
-                Comment = request.Comment,
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "User Not Found",
+                        Hasherror = true
+                    };
+                }
+                var review = new CustomerReview
+                {
+                    // CustomerId = request.Id,
+                    Comment = request.Comment,
+                    Rating = request.Rating,
 
 
-            };
-            _dbContext.CustomerReviews.Add(review);
-            if (await _dbContext.SaveChangesAsync() > 0)
-            {
-                return new BaseResponse<Guid>
-                {
-                    Success = true,
-                    Message = "Succesfully Commented on Review"
                 };
+                _dbContext.CustomerReviews.Add(review);
+                if (await _dbContext.SaveChangesAsync() > 0)
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = true,
+                        Message = "Succesfully Commented on Review"
+                    };
+                }
+
+                else
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "Comment Failed"
+                    };
+                }
             }
-            else
+
+            catch (Exception ex)
             {
+
                 return new BaseResponse<Guid>
                 {
                     Success = false,
                     Message = "Comment Failed"
                 };
             }
-
         }
 
         public async Task<List<CustomerReviewDto>> GetReview()
@@ -71,47 +85,6 @@ namespace HotelManagementSystem.Implementation.Services
 
                 }).ToList();
         }
-
-
-
-
-
-
-
-
-
-        //public async Task<ReviewResponseDto> GetAllReviewAsync()
-        //{
-        //    var review = await _dbContext.CustomerReviews
-        //       // .Where(x => x.)
-        //       .Select(x => new CustomerReviewDto
-        //       {
-
-        //           Comment = x.Comment
-
-        //       }).ToListAsync();
-
-        //    if (review != null)
-        //    {
-        //        return new ReviewResponseDto
-        //        {
-        //            Success = true,
-        //            Message = "Review Retrieved Succesfully",
-        //            Data = review
-        //        };
-        //    }
-        //    else
-        //    {
-        //        return new ReviewResponseDto
-        //        {
-        //            Success = false,
-        //            Message = "failed",
-        //            Hasherror = true
-        //        };
-        //    }
-        //}
-
-
 
         public async Task<BaseResponse<IList<CustomerReviewDto>>> GetAllReviewAsync()
         {

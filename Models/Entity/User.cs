@@ -1,18 +1,19 @@
-﻿
-
-using HotelManagementSystem.Model.Entity.Enum;
+﻿using HotelManagementSystem.Model.Entity.Enum;
+using Microsoft.AspNetCore.Identity;
 
 namespace HotelManagementSystem.Model.Entity
 {
-    public class User : BaseEntity
+    public class User : IdentityUser
     {
-        public string? Name { get; set; }
+        public UserRole UserRole { get; set; } 
+        public DateTime CreatedTime { get; set; }
+        public DateTime UpdatedTime { get; set; }
+        public string? Name { get; set; } 
         public string? Address { get; set; }
-        public string? Email { get; set; }
-        public string? PhoneNumber { get; set; }
-        public string? UserName { get; set; }
-        public int Age { get; set; }
-        public string? Password { get; set; }
+        public DateTime DateOfBirth { get; set; }
         public Gender Gender { get; set; }
+        public string AgeRange { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
     }
 }

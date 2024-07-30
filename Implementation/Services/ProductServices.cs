@@ -19,26 +19,39 @@ namespace HotelManagementSystem.Implementation.Services
 
         public async Task<BaseResponse<Guid>> CreateProduct(CreateProduct request)
         {
-            if (request != null)
+            try
             {
-                var items = new Product
+                if (request != null)
                 {
-                    Id = request.Id,
-                    Name = request.Name,
-                    Price = request.Price
-                };
-                _dbContext.Products.Add(items);
-            }
+                    var items = new Product
+                    {
+                        Id = request.Id,
+                        Name = request.Name,
+                        Price = request.Price
+                    };
+                    _dbContext.Products.Add(items);
+                }
 
-            if (await _dbContext.SaveChangesAsync() > 0)
-            {
-                return new BaseResponse<Guid>
+                if (await _dbContext.SaveChangesAsync() > 0)
                 {
-                    Success = true,
-                    Message = "Product Created Succesfully"
-                };
+                    return new BaseResponse<Guid>
+                    {
+                        Success = true,
+                        Message = "Product Created Successfully",
+
+                    };
+                }
+                else
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "Fail To Create Product",
+                        Hasherror = true
+                    };
+                }
             }
-            else
+            catch (Exception ex)
             {
                 return new BaseResponse<Guid>
                 {
@@ -51,23 +64,48 @@ namespace HotelManagementSystem.Implementation.Services
 
         }
 
+
+        public async Task<List<ProductDto>> GetProduct()
+        {
+            return _dbContext.Products
+                .Select(x => new ProductDto()
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Price = x.Price
+                }).ToList();
+        }
+
+
         public async Task<BaseResponse<Guid>> DeleteProductAsync(Guid Id)
         {
-            var item = await _dbContext.Products.FirstOrDefaultAsync();
+            try
+            {
+                var item = await _dbContext.Products.FirstOrDefaultAsync();
 
-            if (item != null)
-            {
-                _dbContext.Products.Remove(item);
-            }
-            if (await _dbContext.SaveChangesAsync() > 0)
-            {
-                return new BaseResponse<Guid>
+                if (item != null)
                 {
-                    Success = true,
-                    Message = "Product has been deleted Succesfully"
-                };
+                    _dbContext.Products.Remove(item);
+                }
+                if (await _dbContext.SaveChangesAsync() > 0)
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = true,
+                        Message = "Product has been deleted Succesfully"
+                    };
+                }
+                else
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "Failed to delete This Product",
+                        Hasherror = true
+                    };
+                }
             }
-            else
+            catch (Exception ex)
             {
                 return new BaseResponse<Guid>
                 {
@@ -76,9 +114,10 @@ namespace HotelManagementSystem.Implementation.Services
                     Hasherror = true
                 };
             }
+
         }
 
-        public async Task<BaseResponse<IList<ProductDto>>> GetAllProductsByIdAsync(Guid Id)
+        public async Task<BaseResponse<ProductDto>> GetAllProductsByIdAsync(Guid Id)
         {
 
             var item = await _dbContext.Products
@@ -87,10 +126,10 @@ namespace HotelManagementSystem.Implementation.Services
                 {
                     Name = x.Name,
                     Price = x.Price,
-                }).ToListAsync();
+                }).FirstOrDefaultAsync();
             if (item != null)
             {
-                return new BaseResponse<IList<ProductDto>>
+                return new BaseResponse<ProductDto>
                 {
                     Success = true,
                     Message = "Products Retrieved Succesfully",
@@ -99,7 +138,7 @@ namespace HotelManagementSystem.Implementation.Services
             }
             else
             {
-                return new BaseResponse<IList<ProductDto>>
+                return new BaseResponse<ProductDto>
                 {
                     Success = false,
                     Message = "Retrieved Failed",
@@ -165,44 +204,104 @@ namespace HotelManagementSystem.Implementation.Services
         }
 
 
-        public async Task<BaseResponse<ProductDto>> UpdateProduct(Guid Id, UpdateProduct request)
+        //public async Task<BaseResponse<ProductDto>> UpdateProduct(Guid Id, UpdateProduct request)
+        //{
+        //    try
+        //    {
+        //        var item = await _dbContext.Products.FirstOrDefaultAsync();
+        //        if (item == null)
+        //        {
+        //            return new BaseResponse<ProductDto>
+        //            {
+        //                Success = false,
+        //                Message = "Failed to Update Product ,there was an error in the updating process.",
+        //                Hasherror = true
+        //            };
+        //        }
+
+        //        //item.Id = request.Id;
+        //        item.Name = request.Name;
+        //        item.Price = request.Price;
+        //        _dbContext.Products.Update(item);
+        //        if (await _dbContext.SaveChangesAsync() > 0)
+        //        {
+        //            return new BaseResponse<ProductDto>
+        //            {
+        //                Success = true,
+        //                Message = $"Product with ID {Id} Updated successfully."
+        //            };
+        //        }
+        //        else
+        //        {
+        //            return new BaseResponse<ProductDto>
+        //            {
+        //                Success = false,
+        //                Message = "Failed to Update Product ,there was an error in the updating process.",
+        //                Hasherror = true
+        //            };
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return new BaseResponse<ProductDto>
+        //        {
+        //            Success = false,
+        //            Message = "Failed to Update Product ,there was an error in the updating process.",
+        //            Hasherror = true
+        //        };
+        //    }
+
+
+        //}
+
+
+        public async Task<BaseResponse<ProductDto>> UpdateProduct(Guid id, UpdateProduct request)
         {
-            var item = await _dbContext.Products.FirstOrDefaultAsync(x => x.Id == Id);
-            if (item == null)
+            try
+            {
+                var item = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
+                if (item == null)
+                {
+                    return new BaseResponse<ProductDto>
+                    {
+                        Success = false,
+                        Message = "Product not found.",
+                        Hasherror = true
+                    };
+                }
+
+                item.Name = request.Name;
+                item.Price = request.Price;
+
+                _dbContext.Products.Update(item);
+                if (await _dbContext.SaveChangesAsync() > 0)
+                {
+                    return new BaseResponse<ProductDto>
+                    {
+                        Success = true,
+                        Message = $"Product with ID {id} updated successfully."
+                    };
+                }
+                else
+                {
+                    return new BaseResponse<ProductDto>
+                    {
+                        Success = false,
+                        Message = "Failed to update product.",
+                        Hasherror = true
+                    };
+                }
+            }
+            catch (Exception ex)
             {
                 return new BaseResponse<ProductDto>
                 {
                     Success = false,
-                    Message = "Failed to Update Product ,there was an error in the updating process.",
-                    Hasherror = true
-                };
-            }
-
-            item.Id = request.Id;
-            item.Name = request.Name;
-            item.Price = request.Price;
-            _dbContext.Products.Add(item);
-
-            if (await _dbContext.SaveChangesAsync() > 0)
-            {
-                return new BaseResponse<ProductDto>
-                {
-                    Success = true,
-                    Message = $"Product with ID {Id} Updated successfully."
-                };
-            }
-            else
-            {
-                return new BaseResponse<ProductDto>
-                {
-                    Success = false,
-                    Message = "Failed to Update Product ,there was an error in the updating process.",
+                    Message = "An error occurred while updating the product.",
                     Hasherror = true
                 };
             }
         }
-
-
 
     }
 }

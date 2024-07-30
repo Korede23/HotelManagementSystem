@@ -1,0 +1,54 @@
+﻿@model IEnumerable<HotelManagementSystem.Dto.PaymentDto>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Payment";
+}
+
+<!-- Recent Sales Start -->
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-secondary text-center rounded p-4">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <a href="@Url.Action("CreatePayment","Payment")" class="mb-0">Create Payment</a>
+        </div>
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive">
+                <table class="table text-start align-middle table-bordered table-hover mb-0">
+                    <thead>
+                        <tr class="text-white">
+                            <th scope="col"><input class="form-check-input" type="checkbox"></th>
+                            <th scope="col">Amount</th>
+                            <th scope="col">Balance</th>
+                            <th scope="col">PaymentDate</th>
+                            <th scope="col">PaymentMethod</th>
+                            <th scope="col">PaymentStatus</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><input class="form-check-input" type="checkbox"></td>
+                                <td>@item.Amount</td>
+                                <td>@item.Balance</td>
+                                <td>@item.PaymentDate</td>
+                                <td>@item.PaymentMethod</td>
+                                <td>@item.PaymentStatus</td>
+                                <td> |
+                                    <a asp-action="DeleteCustomer" asp-route-id="@item.PaymentId">Delete</a> |
+                                    <a asp-action="GetCustomerById" asp-route-id="@item.PaymentId">ViewDetails</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <h3>No payments available</h3>
+        }
+    </div>
+</div>
+<!-- Recent Sales End -->

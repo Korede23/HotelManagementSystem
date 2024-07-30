@@ -1,0 +1,57 @@
+﻿@model HotelManagementSystem.Dto.RequestModel.CreatePayment
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Create Payment";
+}
+
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-12 col-12">
+            <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4">Create Payment</h6>
+                <form asp-controller="Payment" asp-action="CreatePayment">
+
+                    <div class="row">
+                        <div class="col mb-6">
+                            <label class="form-label">Amount</label>
+                            <input type="text" class="form-control" name="Amount" aria-describedby="-Amount">
+                        </div>
+                        <div class="col mb-6">
+                            <label class="form-label">Balance</label>
+                            <input type="text" class="form-control" name="Balance">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col mb-6">
+                            <label class="form-label">PaymentDate</label>
+                            <input asp-for="PaymentDate" class="form-control" type="date" />
+                        </div>
+                        <div class="col mb-3">
+                            <div class="col mb-6">
+                                <label asp-for="PaymentMethod"></label>
+                                <select asp-for="PaymentMethod" class="form-select" asp-items="Html.GetEnumSelectList<HotelManagementSystem.Model.Entity.Enum.PaymentMethod>()">
+                                    <option value="">Select PaymentMethod</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col mb-3">
+                                <label asp-for="PaymentStatus"></label>
+                                <select asp-for="PaymentStatus" class="form-select" asp-items="Html.GetEnumSelectList<HotelManagementSystem.Model.Entity.Enum.PaymentStatus>()">
+                                    <option value="">Select PaymentStatus</option>
+                                </select>
+                            </div>
+                            </div>
+                        </div>
+                       
+                                <div class="mt-3">
+                                    <button type="submit" class="btn btn-primary">Create</button>
+                                    <a href="@Url.Action("Payments","Payment")" class="btn btn-dark" ms-2>Show All</a>
+                                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

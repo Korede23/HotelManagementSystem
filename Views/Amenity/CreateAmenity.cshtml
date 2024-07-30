@@ -1,0 +1,30 @@
+﻿@model HotelManagementSystem.Dto.RequestModel.CreateAmenityRequestModel
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Create Amenity ";
+}
+
+<div class="container-fluid pt-4 px-4">
+    <div class="row g-4">
+        <div class="col-12 col-12">
+            <div class="bg-secondary rounded h-100 p-4">
+                <h6 class="mb-4">Create Amenity</h6>
+                <form asp-controller="Amenity" asp-action="CreateAmenity">
+
+                    <div class="row">
+                        <div class="col mb-6">
+                            <label for="AmenityName" class="form-label">Amenity Name</label>
+                            <textarea class="form-control" rows="5" id="AmenityName" name="AmenityName"></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">Create</button>
+                    <a href="@Url.Action("Amenities","Amenity")" class="btn btn-dark ms-2">Show All</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

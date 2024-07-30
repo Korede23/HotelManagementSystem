@@ -1,0 +1,34 @@
+﻿@model HotelManagementSystem.Dto.ProductDto
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "products Details";
+}
+
+
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-secondary text-center rounded p-4">
+        <h2>Product Details</h2>
+        <div class="table-responsive">
+            @if (Model != null)
+            {
+                <table class="table text-start align-middle table-bordered table-hover mb-0">
+                    <tbody>
+                        <tr>
+                            <th scope="row">Name</th>
+                            <td>@Model.Name</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Price</th>
+                            <td>@Model.Price</td>
+                        </tr>
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>Product details are not available.</p>
+            }
+            <a href="@Url.Action("Products", "Product")" class="btn btn-primary mt-3">Back to List</a>
+        </div>
+    </div>
+</div>

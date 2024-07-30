@@ -8,7 +8,7 @@ namespace HMS.Implementation.Interface
     {
         Task<BaseResponse<IList<AmenityDto>>> CreateAmenity(CreateAmenityRequestModel request);
         Task<BaseResponse<Guid>> DeleteAmenity(Guid Id);
-        Task<BaseResponse<IList<AmenityDto>>> GetAmenityBYId(Guid Id);
+        Task<BaseResponse<AmenityDto>> GetAmenityBYId(Guid Id);
         Task<BaseResponse<IList<AmenityDto>>> GetAllAmenity();
         Task<BaseResponse<AmenityDto>> UpdateAmenity(Guid Id, UpdateAmenity request);
         Task<BaseResponse<AmenityDto>> GetAmenityAsync(Guid Id);
