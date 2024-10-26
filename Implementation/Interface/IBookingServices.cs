@@ -14,9 +14,6 @@ namespace HotelManagementSystem.Implementation.Interface
         Task<BaseResponse<BookingDto>> GetBookingAsync(Guid Id);
         Task<List<BookingDto>> GetBooking();
         List<SelectRoomDto> GetRoomSelect();
-
-
-
-
+        Task<IEnumerable<ActiveBookingDto>> GetActiveBookings();
     }
 }

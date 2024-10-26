@@ -18,6 +18,9 @@ namespace HotelManagementSystem.Controllers
             var customer = await _customerServices.GetCustomer();
             return View(customer);
         }
+
+        
+
         [AllowAnonymous]
         [HttpGet("create-customer")]
         public async Task<IActionResult> CreateCustomer()

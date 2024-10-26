@@ -39,7 +39,7 @@ namespace HotelManagementSystem.Dto.Implementation.Services
                 {
                     var user = new User()
                     {
-                        Name = request.Name,
+                        FullName = request.LastName + " " + request.FirstName,
                         UserName = request.UserName,
                         Address = request.Address,
                         DateOfBirth = request.DateOfBirth,
@@ -49,6 +49,8 @@ namespace HotelManagementSystem.Dto.Implementation.Services
                         UserRole = request.Role,
                         FirstName = request.FirstName,
                         LastName = request.LastName,
+                        AgeRange = request.AgeRange
+
                     };
 
                     var result = await _userManager.CreateAsync(user, request.Password);
@@ -142,7 +144,7 @@ namespace HotelManagementSystem.Dto.Implementation.Services
                         AgeRange = x.AgeRange,
                         Email = x.Email,
                         Gender = x.Gender,
-                        Name = x.Name,
+                        Name = x.FullName,
                         PhoneNumber = x.PhoneNumber,
                         Id = x.Id,
                         UserName = x.UserName,
@@ -196,7 +198,7 @@ namespace HotelManagementSystem.Dto.Implementation.Services
                         AgeRange = user.AgeRange,
                         Email = user.Email,
                         Gender = user.Gender,
-                        Name = user.Name,
+                        Name = user.FullName,
                         PhoneNumber = user.PhoneNumber,
                         UserName = user.UserName,
                     }
@@ -222,7 +224,7 @@ namespace HotelManagementSystem.Dto.Implementation.Services
                         AgeRange = x.AgeRange,
                         Email = x.Email,
                         Gender = x.Gender,
-                        Name = x.Name,
+                        Name = x.FullName,
                         PhoneNumber = x.PhoneNumber,
                         Id = x.Id,
                         UserName = x.UserName,
@@ -253,7 +255,7 @@ namespace HotelManagementSystem.Dto.Implementation.Services
             return await _dbContext.Users
                 .Select(x => new UserDto
                 {
-                    Name = x.Name,
+                    Name = x.FullName,
                     Address = x.Address,
                     Gender = x.Gender,
                     AgeRange = x.AgeRange,
@@ -280,7 +282,7 @@ namespace HotelManagementSystem.Dto.Implementation.Services
                     };
                 }
 
-                user.Name = request.Name;
+                user.FullName = request.Name;
                 user.PhoneNumber = request.PhoneNumber;
                 user.UserName = request.UserName;
                 user.Email = request.Email;
@@ -387,6 +389,16 @@ namespace HotelManagementSystem.Dto.Implementation.Services
                         }
 
                         _logger.LogInformation("User logged in successfully with username: {UserName}", model.UserName);
+
+                        if (Enum.TryParse(typeof(UserRole), userRoles.FirstOrDefault(), out var parsedRole))
+                        {
+                            status.Role = (UserRole?)parsedRole;
+                        }
+                        else
+                        {
+                            status.Role = null;
+                        }
+
                         status.StatusCode = 1;
                         status.Success = true;
                         status.Message = "Logged in successfully";
@@ -419,5 +431,7 @@ namespace HotelManagementSystem.Dto.Implementation.Services
                 return status;
             }
         }
+
+
     }
 }

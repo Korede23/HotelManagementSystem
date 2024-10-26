@@ -1,8 +1,15 @@
 ﻿@model HotelManagementSystem.Dto.RequestModel.InitializePaymentRequestDto
 
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Initialize Payment";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Rooms";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
 
 <h2>Payment Initialization</h2>
@@ -13,8 +20,6 @@
         <input asp-for="Email" class="form-control" />
         <span asp-validation-for="Email" class="text-danger"></span>
     </div>
-
-    <!-- Hidden fields to pass userId, bookingId, and orderId -->
     <input type="hidden" name="userId" value="@Model.UserId" />
     <input type="hidden" name="bookingId" value="@Model.BookingId" />
 

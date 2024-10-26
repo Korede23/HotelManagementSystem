@@ -8,12 +8,14 @@ namespace HotelManagementSystem.Model.Entity
         public UserRole UserRole { get; set; } 
         public DateTime CreatedTime { get; set; }
         public DateTime UpdatedTime { get; set; }
-        public string? Name { get; set; } 
+        public string? FullName { get; set; } 
         public string? Address { get; set; }
         public DateTime DateOfBirth { get; set; }
         public Gender Gender { get; set; }
         public string AgeRange { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+
     }
 }

@@ -1,7 +1,14 @@
 ﻿@model IEnumerable<HotelManagementSystem.Dto.OrderDto>
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Order";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Rooms";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
 
 <!-- Recent Sales Start -->

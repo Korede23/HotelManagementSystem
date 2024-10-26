@@ -24,4 +24,12 @@
   <ItemGroup>
     <Folder Include="wwwroot\Admin\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\img\css\.DS_Store" />
+    <None Include="wwwroot\img\images\.DS_Store" />
+    <None Include="wwwroot\img\js\.DS_Store" />
+    <None Include="wwwroot\img\js\revolution\.DS_Store" />
+    <None Include="wwwroot\img\js\revolution\js\.DS_Store" />
+  </ItemGroup>
 </Project>

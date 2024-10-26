@@ -1,7 +1,14 @@
 ﻿@model HotelManagementSystem.Dto.CustomerStatusDto
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Check out";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Rooms";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
 
 <div class="container-fluid pt-4 px-4">
@@ -32,6 +39,7 @@
                     </div>
                 </form>
             </div>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-primary mt-3 float-end">Home Page</a>
         </div>
     </div>
 </div>

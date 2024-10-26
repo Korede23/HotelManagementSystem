@@ -1,9 +1,15 @@
 ﻿@model HotelManagementSystem.Dto.CustomerStatusDto
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Check In";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Rooms";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
-
 <div class="container-fluid pt-4 px-4">
     <div class="row g-4">
         <div class="col-12">
@@ -11,11 +17,10 @@
                 <h6 class="mb-4">Check In</h6>
                 <form asp-controller="CustomerStatus" asp-action="CheckIn" method="post">
                     <div class="row">
-
                         <div class="col mb-6">
-                            <label class="form-label">Customer</label>
-                            <select class="form-select" asp-for="CustomerId" asp-items="@(ViewBag.Customers as SelectList)" required>
-                                <option value="">Select Customer</option>
+                            <label for="BookingId">Select Booking</label>
+                            <select asp-for="BookingId" asp-items="ViewBag.ActiveBookings" onchange="updateCustomerId(this)">
+                                <option value="">-- Select Booking --</option>
                             </select>
                         </div>
                         <div class="col mb-6">
@@ -24,15 +29,16 @@
                                 <input type="date" class="form-control" asp-for="CheckInDate" required>
                             </div>
                         </div>
-                       
                     </div>
+                    <input type="hidden" name="CustomerId" value="@ViewBag.CustomerId" />
+
                     <div class="mt-3">
                         <button type="submit" class="btn btn-primary">Check In</button>
-                        <a href="@Url.Action("CustomerStatus","CustomerStatus")" class="btn btn-dark ms-2">Show All</a>
+                        <a href="@Url.Action("CustomerStatus", "CustomerStatus")" class="btn btn-dark ms-2">Show All</a>
                     </div>
                 </form>
+                <a href="@Url.Action("Index", "Home")" class="btn btn-primary mt-3 float-end">Home Page</a>
             </div>
         </div>
     </div>
 </div>
- 

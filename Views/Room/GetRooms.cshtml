@@ -1,8 +1,15 @@
 ﻿@model HotelManagementSystem.Model.Entity.PaginatedList<HotelManagementSystem.Dto.RoomDto>
 
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Rooms";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Rooms";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
 
 <h2 class="text-center">Rooms</h2>
@@ -49,6 +56,7 @@
                             <a asp-controller="Room" asp-route-id="@room.Id" asp-action="GetRoomsById" class="btn btn-info">View Details</a>
                         </div>
                     </div>
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary mt-3 float-end">Home Page</a>
                 </div>
             </div>
         }

@@ -1,5 +1,6 @@
 ﻿using HotelManagementSystem.Model.Entity;
 using HotelManagementSystem.Model.Entity.Enum;
+using HotelManagementSystem.Models.Entity;
 
 namespace HotelManagementSystem.Dto.RequestModel
 {
@@ -13,6 +14,6 @@ namespace HotelManagementSystem.Dto.RequestModel
         public int MaxOccupancy { get; set; }
         public decimal RoomRate { get; set; }
         public RoomStatus RoomStatus { get; set; }
-        public byte[] Image { get; set; }
+        public ICollection<ImageDto> Images { get; set; } = new HashSet<ImageDto>();
     }
 }

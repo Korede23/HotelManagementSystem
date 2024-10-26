@@ -1,7 +1,14 @@
 ﻿@model IEnumerable<HotelManagementSystem.Dto.CustomerStatusDto>
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Customer Status";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Rooms";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
 
 <div class="container-fluid pt-4 px-4">
@@ -34,9 +41,10 @@
                                     <a asp-action="CheckOut" asp-route-customerId="@item.CustomerId">CheckOut</a>
                                 </td>
                             </tr>
-                        }m 
+                        }
                     </tbody>
                 </table>
+                <a href="@Url.Action("Index", "Home")" class="btn btn-primary mt-3 float-end">Home Page</a>
             </div>
         }
         else

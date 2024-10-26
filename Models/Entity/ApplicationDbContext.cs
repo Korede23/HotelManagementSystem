@@ -6,34 +6,38 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagementSystem.Model.Entity
 {
-    public class ApplicationDbContext(DbContextOptions options) : IdentityDbContext(options)
+    public class ApplicationDbContext : IdentityDbContext<User> // Specify your User class here
     {
-        protected override void OnModelCreating(ModelBuilder builder)
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
-            base.OnModelCreating(builder);
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
             // Seed an admin user
             var adminRoleId = Guid.NewGuid().ToString();
             var adminUserId = Guid.NewGuid().ToString();
 
-            builder.Entity<IdentityRole>().HasData(
+            modelBuilder.Entity<IdentityRole>().HasData(
                 new IdentityRole
                 {
                     Id = adminRoleId,
                     Name = "Admin",
-                    NormalizedName = "ADMIN" 
+                    NormalizedName = "ADMIN"
                 },
-                 new IdentityRole
-                 {
-                     Id = Guid.NewGuid().ToString(),
-                     Name = "Customer",
-                     NormalizedName = "Customer"
-                 }
+                new IdentityRole
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Name = "Customer",
+                    NormalizedName = "CUSTOMER"
+                }
             );
 
             var hasher = new PasswordHasher<User>();
 
-            builder.Entity<User>().HasData(
+            modelBuilder.Entity<User>().HasData(
                 new User
                 {
                     Id = adminUserId,
@@ -45,34 +49,39 @@ namespace HotelManagementSystem.Model.Entity
                     PasswordHash = hasher.HashPassword(null, "Admin@123"),
                     SecurityStamp = string.Empty,
                     UserRole = UserRole.Admin,
-                    Name = "Ahmad Korede",
+                    FullName = "Ahmad Korede",
                     AgeRange = "20-40",
                     Gender = Gender.Male,
                     FirstName = "Ahmad",
-                    LastName = "oseni"
+                    LastName = "Oseni"
                 }
             );
 
-            builder.Entity<IdentityUserRole<string>>().HasData(
+            modelBuilder.Entity<IdentityUserRole<string>>().HasData(
                 new IdentityUserRole<string>
                 {
                     RoleId = adminRoleId,
                     UserId = adminUserId
                 }
             );
+
+            
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.Customer) 
+                .WithMany(u => u.Bookings) 
+                .HasForeignKey(b => b.CustomerId) 
+                .OnDelete(DeleteBehavior.Cascade); 
         }
+
         public DbSet<Room> Rooms { get; set; }
-        public DbSet<User> Users { get; set; }
         public DbSet<Amenity> Amenities { get; set; }
         public DbSet<Images> Images { get; set; }
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<Product> Products { get; set; }
-        public DbSet<Payment> payments { get; set; }
-        public DbSet<CustomerReview> CustomerReviews  { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<CustomerReview> CustomerReviews { get; set; }
         public DbSet<CustomerStatus> CustomerStatuses { get; set; }
         public DbSet<RequestPasswordReset> RequestPasswordResets { get; set; }
-
-       
     }
 }

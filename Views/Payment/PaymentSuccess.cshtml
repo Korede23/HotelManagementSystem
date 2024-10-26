@@ -1,5 +1,13 @@
 ﻿@{
-    ViewData["Title"] = "Payment Success";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Rooms";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
 
 <h2>Payment Initiated Successfully</h2>

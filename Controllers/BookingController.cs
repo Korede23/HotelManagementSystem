@@ -2,8 +2,6 @@
 using HotelManagementSystem.Dto;
 using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Implementation.Interface;
-using HotelManagementSystem.Model.Entity;
-using MailKit.Search;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -18,7 +16,7 @@ namespace HotelManagementSystem.Controllers
         private readonly IRoomService _roomService;
         private readonly INotyfService _notyf;
 
-        public BookingController(IBookingServices bookService, IRoomService roomService , INotyfService notyf)
+        public BookingController(IBookingServices bookService, IRoomService roomService, INotyfService notyf)
         {
             _bookService = bookService;
             _roomService = roomService;
@@ -35,14 +33,14 @@ namespace HotelManagementSystem.Controllers
 
 
         [HttpGet("create-booking")]
-        public IActionResult CreateBooking()
+        public async Task<IActionResult> CreateBooking(Guid roomId)
         {
-            var selectRoom = _bookService.GetRoomSelect();
-            if (selectRoom == null)
+            var room = await _roomService.GetRoomsByIdAsync(roomId);
+            if (room.Success)
             {
-                selectRoom = new List<SelectRoomDto>();
+                var roomName = room.Data.RoomName;
+                ViewBag.RoomName = roomName;
             }
-            ViewData["SelectRoom"] = new SelectList(selectRoom, "Id", "RoomName");
             return View();
         }
 
@@ -55,7 +53,7 @@ namespace HotelManagementSystem.Controllers
 
             if (Guid.TryParse(userId, out var customerId))
             {
-                request.UserId = customerId;
+                request.UserId = customerId.ToString();
 
                 var booking = await _bookService.CreateBooking(request);
                 if (booking.Success)
@@ -64,9 +62,12 @@ namespace HotelManagementSystem.Controllers
                     var bookingId = booking.Data;
                     return RedirectToAction("InitiatePaymentForm", "Payment", new { userId = customerId, bookingId });
                 }
+                else
+                {
+                    _notyf.Error(booking.Message, 3);
+                    return RedirectToAction("GetRooms", "Room");
+                }
 
-                _notyf.Error(booking.Message);
-                return BadRequest();
             }
 
             _notyf.Error("User not found.");
@@ -131,7 +132,7 @@ namespace HotelManagementSystem.Controllers
             {
                 return View(bookings);
             }
-                return BadRequest(bookings);
+            return BadRequest(bookings);
         }
 
         [HttpGet("get-booking-by-id/{id}")]
@@ -147,7 +148,7 @@ namespace HotelManagementSystem.Controllers
             return RedirectToAction("Bookings");
         }
 
-       
+
 
     }
 }

@@ -51,7 +51,7 @@ namespace HotelManagementSystem.Implementation.Services
                 Body = emailBody,
                 Title = "WELCOME TO KOREDE HOTEL MANAGEMENT SYSTEM",
                 HtmlContent = emailBody,
-                ToEmail = "oseniahmadkorede@gmail.com"
+                ToEmail = user.Email
             };
 
             try

@@ -3,6 +3,7 @@ using Azure;
 using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Implementation.Interface;
 using HotelManagementSystem.Implementation.Services;
+using HotelManagementSystem.Model.Entity.Enum;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -154,12 +155,26 @@ namespace HotelManagementSystem.Controllers
         {
             if (!ModelState.IsValid)
                 return View(model);
+
             var result = await _userServices.LoginAsync(model);
-            if (result.StatusCode == 1)
+
+            if (result.StatusCode == 1) 
             {
                 _notyf.Success(result.Message, 3);
-                return RedirectToAction("Index", "Admin" );
-            } 
+                if (result.Role == UserRole.Admin) 
+                {
+                    return RedirectToAction("Index", "Admin");
+                }
+                else if (result.Role == UserRole.Customer) 
+                {
+                    return RedirectToAction("Index", "Home"); 
+                }
+                else
+                {
+                    return RedirectToAction("Login");
+                }
+
+            }
             else
             {
                 TempData["msg"] = result.Message;
@@ -167,6 +182,8 @@ namespace HotelManagementSystem.Controllers
                 return RedirectToAction(nameof(Login));
             }
         }
+
+
 
         [AllowAnonymous]
         [HttpGet("change-password")]

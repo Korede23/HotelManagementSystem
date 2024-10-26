@@ -36,11 +36,9 @@ namespace HotelManagementSystem.Implementation.Services
 
             try
             {
-                // Fetch booking, user, and order details asynchronously
                 var booking = await _bookingServices.GetBookingByIdAsync(bookingId);
                 var user = await _userServices.GetUserByIdAsync(userId);
 
-                // Check if any of the entities is null
                 if (booking == null)
                 {
                     return new BaseResponse<InitializePaymentResponseDto>
@@ -69,14 +67,14 @@ namespace HotelManagementSystem.Implementation.Services
                     CreatedOn = DateTime.Now,
                 };
 
-                _dbcontext.payments.Add(payment);
+                _dbcontext.Payments.Add(payment);
                 await _dbcontext.SaveChangesAsync();
 
                 string callbackUrl = "https://localhost:7211/Payment/PaymentCallback";
 
                 var requestPayload = new
                 {
-                    amount = booking.Data.TotalCost * 100, // Convert amount to kobo
+                    amount = booking.Data.TotalCost * 100,
                     email = requestDto.Email.Trim(),
                     reference = payment.TransactionReference,
                     callback_url = callbackUrl
@@ -141,11 +139,10 @@ namespace HotelManagementSystem.Implementation.Services
         {
             try
             {
-                // Create the HTTP request to Paystack API
+
                 var requestMessage = new HttpRequestMessage(HttpMethod.Get, $"https://api.paystack.co/transaction/verify/{reference}");
                 requestMessage.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _secretKey);
 
-                // Send the request to Paystack API
                 var response = await _httpClient.SendAsync(requestMessage);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
@@ -158,7 +155,6 @@ namespace HotelManagementSystem.Implementation.Services
                     };
                 }
 
-                // Deserialize the response content to your DTO
                 var verifyResponse = JsonConvert.DeserializeObject<VerifyPaymentRequestDto>(responseContent);
 
                 return new BaseResponse<VerifyPaymentRequestDto>

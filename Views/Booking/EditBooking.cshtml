@@ -1,7 +1,14 @@
 ﻿@model HotelManagementSystem.Dto.RequestModel.UpdateBooking
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Edit Room";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Rooms";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
 
 

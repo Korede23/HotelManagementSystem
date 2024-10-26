@@ -37,7 +37,6 @@ namespace HotelManagementSystem.Controllers
             var product = await _productServices.GetAllProductAsync();
             if (product.Success)
             {
-                ViewBag.Rooms = product.Data;
                 return View();
             }
             return BadRequest();

@@ -1,8 +1,15 @@
 ﻿@model HotelManagementSystem.Dto.OrderDto
 
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Edit Order";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Rooms";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
 
 <div class="container-fluid pt-4 px-4">

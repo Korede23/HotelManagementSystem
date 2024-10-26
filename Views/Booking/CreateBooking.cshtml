@@ -1,9 +1,15 @@
 ﻿@model HotelManagementSystem.Dto.RequestModel.CreateBooking
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Create Booking";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Rooms";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
-
 
 
 @if (!User.IsInRole("Admin"))
@@ -21,12 +27,12 @@
                     <h6 class="mb-4">Create Booking</h6>
                     <form asp-controller="Booking" asp-action="CreateBooking">
                         <div class="row">
-                             <div class="col mb-3">
-                                <label class="form-label">Room </label>
-                                <select asp-for="RoomId" class="form-select" asp-items="@(ViewData["SelectRoom"] as IEnumerable<SelectListItem>)" required>
-                                    <option value="">Select Room</option>
-                                </select>
+                            <div class="col mb-3">
+                                <label class="form-label">Room Name</label>
+                                <input type="text" class="form-control" value="@ViewBag.RoomName" readonly> 
+                                <input type="hidden" asp-for="RoomId" />
                             </div>
+
                             <div class="col mb-3">
                                 <div class="col mb-6">
                                     <label class="form-label">Email</label>
@@ -42,7 +48,7 @@
                         </div>
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </form>
-                    <a href="@Url.Action("Index", "Admin")" class="btn btn-primary mt-3 float-end">Home Page</a>
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary mt-3 float-end">Home Page</a>
                 </div>
             </div>
         </div>

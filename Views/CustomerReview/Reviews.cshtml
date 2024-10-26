@@ -1,7 +1,14 @@
 ﻿@model IEnumerable<HotelManagementSystem.Dto.CustomerReviewDto>
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "CustomerReview";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Rooms";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
 
 <!-- Recent Sales Start -->
@@ -36,6 +43,7 @@
                         }
                     </tbody>
                 </table>
+                <a href="@Url.Action("Index", "Home")" class="btn btn-primary mt-3 float-end">Home Page</a>
             </div>
         }
         else

@@ -70,7 +70,7 @@ namespace HMS.Implementation.Services
                     AgeRange = x.AgeRange,
                     Email = x.Email,
                     Gender = x.Gender,
-                    Name = x.Name,
+                    Name = x.FullName,
                     PhoneNumber = x.PhoneNumber,
                     UserName = x.UserName,
                 }).FirstOrDefaultAsync();
@@ -107,7 +107,7 @@ namespace HMS.Implementation.Services
                     AgeRange = x.AgeRange,
                     Email = x.Email,
                     Gender = x.Gender,
-                    Name = x.Name,
+                    Name = x.FullName,
                     PhoneNumber = x.PhoneNumber,
                     UserName = x.UserName,
                 }).ToListAsync();
@@ -132,7 +132,7 @@ namespace HMS.Implementation.Services
                         AgeRange = customer.AgeRange,
                         Email = customer.Email,
                         Gender = customer.Gender,
-                        Name = customer.Name,
+                        Name = customer.FullName,
                         PhoneNumber = customer.PhoneNumber,
                         UserName = customer.UserName,
                     }
@@ -156,7 +156,7 @@ namespace HMS.Implementation.Services
                    AgeRange = x.AgeRange,
                    Email = x.Email,
                    Gender = x.Gender,
-                   Name = x.Name,
+                   Name = x.FullName,
                    PhoneNumber = x.PhoneNumber,
                    UserName = x.UserName,
                }).ToListAsync();

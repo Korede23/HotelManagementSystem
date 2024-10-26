@@ -3,6 +3,7 @@ using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Dto.ResponseModel;
 using HotelManagementSystem.Implementation.Interface;
 using HotelManagementSystem.Model.Entity;
+using HotelManagementSystem.Model.Entity.Enum;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagementSystem.Implementation.Services
@@ -37,6 +38,21 @@ namespace HotelManagementSystem.Implementation.Services
                     };
                 }
 
+                var existingBooking = await _dbContext.Bookings
+                                                        .Where(b => b.RoomId == request.RoomId)
+                                                        .FirstOrDefaultAsync();
+
+                if (existingBooking != null)
+                {
+                    _logger.LogWarning("Room is already booked for RoomId: {RoomId}", request.RoomId);
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "Room is not available at the moment.",
+                        Hasherror = true
+                    };
+                }
+
                 var booking = new Booking()
                 {
                     RoomId = request.RoomId,
@@ -50,6 +66,10 @@ namespace HotelManagementSystem.Implementation.Services
 
                 if (await _dbContext.SaveChangesAsync() > 0)
                 {
+                    room.Availability = RoomAvailability.NotAvailable;
+                    _dbContext.Rooms.Update(room);
+                    await _dbContext.SaveChangesAsync();
+
                     _logger.LogInformation("Booking created successfully with Id: {BookingId}", booking.Id);
                     return new BaseResponse<Guid>
                     {
@@ -324,5 +344,20 @@ namespace HotelManagementSystem.Implementation.Services
                 };
             }
         }
+
+        public async Task<IEnumerable<ActiveBookingDto>> GetActiveBookings()
+        {
+            return await _dbContext.Bookings
+                    .Where(b => !_dbContext.CustomerStatuses.Any(cs => cs.BookingId == b.Id))
+                    .Select(b => new ActiveBookingDto
+                    {
+                        BookingId = b.Id,
+                        CustomerId = b.CustomerId,
+                        CustomerName = b.Customer.FullName
+                    })
+                    .ToListAsync();
+
+        }
+
     }
 }

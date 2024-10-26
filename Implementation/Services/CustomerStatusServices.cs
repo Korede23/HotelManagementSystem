@@ -3,6 +3,7 @@ using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Dto.ResponseModel;
 using HotelManagementSystem.Implementation.Interface;
 using HotelManagementSystem.Model.Entity;
+using HotelManagementSystem.Model.Entity.Enum;
 using HotelManagementSystem.Models.Entity;
 using Microsoft.EntityFrameworkCore;
 namespace HotelManagementSystem.Implementation.Services
@@ -37,16 +38,38 @@ namespace HotelManagementSystem.Implementation.Services
                         Message = "Customer not found."
                     };
                 }
+                var booking = await _dbContext.Bookings.FindAsync(bookingId);
+                if (booking == null)
+                {
+                    _logger.LogWarning("Booking not found .");
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "Booking not found ."
+                    };
+                }
+
+                var room = await _dbContext.Rooms.FindAsync(booking.RoomId);
+                if (room == null)
+                {
+                    _logger.LogWarning("Room not found for BookingId: {bookingId}", bookingId);
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "Room not found for this booking."
+                    };
+                }
 
                 var customerStatus = new CustomerStatus
                 {
                     BookingId = bookingId,
                     CustomerId = customerId,
-                    CustomerName = customer.Name,
+                    CustomerName = customer.FullName,
                     CheckInDate = DateTime.Now,
                 };
-
                 _dbContext.CustomerStatuses.Add(customerStatus);
+                room.RoomStatus = RoomStatus.CheckedIn;
+                _dbContext.Rooms.Update(room);
                 await _dbContext.SaveChangesAsync();
 
                 _logger.LogInformation("Check-in successful for customerId: {customerId}", customerId);
@@ -56,6 +79,7 @@ namespace HotelManagementSystem.Implementation.Services
                     Message = "Check-in successful.",
                     Data = customerStatus.BookingId
                 };
+
             }
             catch (Exception ex)
             {
@@ -68,12 +92,15 @@ namespace HotelManagementSystem.Implementation.Services
             }
         }
 
-        public async Task<BaseResponse<Guid>> CheckOut(Guid customerId)
+
+        public async Task<BaseResponse<Guid>> CheckOut(string customerId)
         {
             _logger.LogInformation("CheckOut called with customerId: {customerId}", customerId);
             try
             {
-                var customerStatus = await _dbContext.CustomerStatuses.FirstOrDefaultAsync(x => x.Id == customerId);
+                var customerStatus = await _dbContext.CustomerStatuses
+            .FirstOrDefaultAsync(x => x.CustomerId == customerId);
+
                 if (customerStatus == null)
                 {
                     _logger.LogWarning("CustomerStatus not found with Id: {customerId}", customerId);
@@ -83,16 +110,39 @@ namespace HotelManagementSystem.Implementation.Services
                         Message = "Customer not found."
                     };
                 }
-                customerStatus.CheckOutDate = DateTime.Now;
 
+                var booking = await _dbContext.Bookings.FindAsync(customerStatus.BookingId);
+                if (booking == null)
+                {
+                    _logger.LogWarning("Booking not found for CustomerStatus Id: {customerStatusId}", customerStatus.Id);
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "Booking not found."
+                    };
+                }
+                customerStatus.CheckOutDate = DateTime.Now;
+                var room = await _dbContext.Rooms.FindAsync(booking.RoomId);
+                if (room == null)
+                {
+                    _logger.LogWarning("Room not found for BookingId: {bookingId}", booking.Id);
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "Room not found for this booking."
+                    };
+                }
+                room.RoomStatus = RoomStatus.Pending;
+                room.Availability = RoomAvailability.Available; 
                 _dbContext.CustomerStatuses.Update(customerStatus);
+                _dbContext.Rooms.Update(room);
                 await _dbContext.SaveChangesAsync();
 
-                _logger.LogInformation("Check-out successful for customerId: {customerId}", customerId);
+                _logger.LogInformation("Check-out successful for customerId: {customerId} and room status set to Available.", customerId);
                 return new BaseResponse<Guid>
                 {
                     Success = true,
-                    Message = "Check-out successful.",
+                    Message = "Check-out successful. Room is now available.",
                     Data = customerStatus.Id
                 };
             }
@@ -107,6 +157,8 @@ namespace HotelManagementSystem.Implementation.Services
             }
         }
 
+
+
         public async Task<List<CustomerStatusDto>> GetCustomerStatus()
         {
             _logger.LogInformation("GetCustomerStatus called");
@@ -117,7 +169,7 @@ namespace HotelManagementSystem.Implementation.Services
                     CheckInDate = x.CheckInDate,
                     CheckOutDate = x.CheckOutDate,
                     CustomerName = x.CustomerName,
-                    CustomerId = x.Id
+                    CustomerId = x.CustomerId
                 }).ToListAsync();
         }
 
@@ -132,7 +184,7 @@ namespace HotelManagementSystem.Implementation.Services
                 result = customers.Select(x => new SelectCustomerDto()
                 {
                     Id = Guid.Parse(x.Id),
-                    Name = x.Name,
+                    Name = x.FullName,
                 }).ToList();
             }
 

@@ -10,37 +10,53 @@ namespace HotelManagementSystem.Implementation.Services
     public class ProductServices : IProductServices
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly IImageService _imageService;
         private readonly ILogger<ProductServices> _logger;
 
-        public ProductServices(ApplicationDbContext dbContext, ILogger<ProductServices> logger)
+        public ProductServices(ApplicationDbContext dbContext, IImageService imageService, ILogger<ProductServices> logger)
         {
             _dbContext = dbContext;
+            _imageService = imageService;
             _logger = logger;
         }
 
         public async Task<BaseResponse<Guid>> CreateProduct(CreateProduct request)
         {
             _logger.LogInformation("Creating product with name: {ProductName}", request.Name);
+
+            if (request == null)
+            {
+                _logger.LogWarning("CreateProduct request is null.");
+                return new BaseResponse<Guid>
+                {
+                    Success = false,
+                    Message = "Invalid product data.",
+                    Hasherror = true
+                };
+            }
+
             try
             {
-                if (request != null)
+                var product = new Product
                 {
-                    var product = new Product
-                    {
-                        Id = request.Id,
-                        Name = request.Name,
-                        Price = request.Price
-                    };
-                    _dbContext.Products.Add(product);
-                }
+                    Id = request.Id,
+                    Name = request.Name,
+                    Price = request.Price
+                };
 
-                if (await _dbContext.SaveChangesAsync() > 0)
+                _dbContext.Products.Add(product);
+                var result = await _dbContext.SaveChangesAsync();
+
+                if (result > 0)
                 {
+                    //await _imageService.AddImagesAsync(request.Images, product.Id);
                     _logger.LogInformation("Product created successfully with name: {ProductName}", request.Name);
+
                     return new BaseResponse<Guid>
                     {
                         Success = true,
                         Message = "Product Created Successfully",
+                        Data = product.Id
                     };
                 }
                 else
@@ -66,6 +82,7 @@ namespace HotelManagementSystem.Implementation.Services
             }
         }
 
+
         public async Task<List<ProductDto>> GetProduct()
         {
             _logger.LogInformation("Retrieving all products as list");
@@ -74,7 +91,12 @@ namespace HotelManagementSystem.Implementation.Services
                 {
                     Id = x.Id,
                     Name = x.Name,
-                    Price = x.Price
+                    Price = x.Price,
+                    Images = x.Images.Select(x => new Dto.ImageDto
+                    {
+                        Id = x.Id,
+                        ImagePath = x.ImagePath,
+                    }).ToList()
                 }).ToListAsync();
         }
 
@@ -132,6 +154,11 @@ namespace HotelManagementSystem.Implementation.Services
                     Id = x.Id,
                     Name = x.Name,
                     Price = x.Price,
+                    Images = x.Images.Select(x => new Dto.ImageDto
+                    {
+                        Id = x.Id,
+                        ImagePath = x.ImagePath,
+                    }).ToList()
                 }).FirstOrDefaultAsync();
 
             if (product != null)
@@ -172,6 +199,11 @@ namespace HotelManagementSystem.Implementation.Services
                         Id = product.Id,
                         Name = product.Name,
                         Price = product.Price,
+                        Images = product.Images.Select(x => new Dto.ImageDto
+                        {
+                            Id = x.Id,
+                            ImagePath = x.ImagePath,
+                        }).ToList()
                     }
                 };
             }
@@ -192,9 +224,14 @@ namespace HotelManagementSystem.Implementation.Services
                     Id = x.Id,
                     Name = x.Name,
                     Price = x.Price,
+                    Images = x.Images.Select(x => new Dto.ImageDto
+                    {
+                        Id = x.Id,
+                        ImagePath = x.ImagePath,
+                    }).ToList()
                 }).ToListAsync();
 
-            if (products.Any())
+            if (products != null)
             {
                 _logger.LogInformation("Products retrieved successfully");
                 return new BaseResponse<IList<ProductDto>>
@@ -221,7 +258,7 @@ namespace HotelManagementSystem.Implementation.Services
             _logger.LogInformation("Updating product with ID: {ProductId}", id);
             try
             {
-                var product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
+                var product = await _dbContext.Products.Include(p => p.Images).FirstOrDefaultAsync(p => p.Id == id);
                 if (product == null)
                 {
                     _logger.LogWarning("Product not found with ID: {ProductId}", id);
@@ -233,11 +270,30 @@ namespace HotelManagementSystem.Implementation.Services
                     };
                 }
 
+                // Update product details
                 product.Name = request.Name;
                 product.Price = request.Price;
+                if (request.Images != null )
+                {
+                    _logger.LogInformation("Updating images for product with ID: {ProductId}", id);
+                    _dbContext.Images.RemoveRange(product.Images);
+                    await _dbContext.SaveChangesAsync();
+                    foreach (var imageDto in request.Images)
+                    {
+                        var newImage = new Models.Entity.Images 
+                        {
+                            Id = Guid.NewGuid(),
+                            ImagePath = imageDto.ImagePath,
+                            //ProductId = product.Id
+                        };
+                        _dbContext.Images.Add(newImage);
+                    }
+                }
 
                 _dbContext.Products.Update(product);
-                if (await _dbContext.SaveChangesAsync() > 0)
+                var result = await _dbContext.SaveChangesAsync();
+
+                if (result > 0)
                 {
                     _logger.LogInformation("Product updated successfully with ID: {ProductId}", id);
                     return new BaseResponse<ProductDto>
@@ -268,5 +324,6 @@ namespace HotelManagementSystem.Implementation.Services
                 };
             }
         }
+
     }
 }

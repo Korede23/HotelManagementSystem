@@ -1,8 +1,15 @@
 ﻿@model HotelManagementSystem.Dto.RequestModel.CreateReview
 
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Create Review";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Rooms";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
 
 
@@ -31,6 +38,7 @@
                     </div>
                 </form>
             </div>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-primary mt-3 float-end">Home Page</a>
         </div>
     </div>
 </div>
