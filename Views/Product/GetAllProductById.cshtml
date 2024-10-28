@@ -1,44 +1,44 @@
 ﻿@model HotelManagementSystem.Dto.ProductDto
-@{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "products Details";
-}
 
+@{
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Rooms";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
+}
 
 <div class="container-fluid pt-4 px-4">
     <div class="bg-secondary text-center rounded p-4">
         <h2>Product Details</h2>
-        <div id="slider" class="carousel slide mt-4" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                @if (Model.Images != null)
+
+        <div class="row mt-4">
+            <div class="col-md-2 d-flex flex-md-column justify-content-center align-items-center">
+                @if (Model.ImageUrls != null && Model.ImageUrls.Count > 0)
                 {
-                    for (var i = 0; i < Model.Images.Count(); i++)
+                    @foreach (var imageUrl in Model.ImageUrls)
                     {
-                        <div class="carousel-item @(i == 0 ? "active" : "")">
-                            <img src="~/RoomImages/@Model.Images[i].ImagePath" class="d-block w-100" style="max-height:300px;  object-fit: cover;" alt="Room image @(i + 1)">
+                        <div class="thumbnail mb-2">
+                            <img src="~/@imageUrl" class="img-fluid" style="max-width: 80px; max-height: 80px; object-fit: cover; cursor: pointer;" onclick="displayMainImage('~/@imageUrl')" alt="Thumbnail">
                         </div>
                     }
                 }
                 else
                 {
-                    <div class="carousel-item active">
-                        <img src="/images/default-room.jpg" class="d-block w-100" alt="Default room image">
+                    <div class="thumbnail mb-2">
+                        <img src="~/ProductImages/default-image.jpg" class="img-fluid" style="max-width: 80px; max-height: 80px; object-fit: cover;" alt="Thumbnail">
                     </div>
                 }
             </div>
-            <a class="carousel-control-prev" href="#slider" role="button" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Previous</span>
-            </a>
-            <a class="carousel-control-next" href="#slider" role="button" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">Next</span>
-            </a>
-        </div>
-        <div class="table-responsive">
-            @if (Model != null)
-            {
-                <table class="table text-start align-middle table-bordered table-hover mb-0">
+            <div class="col-md-6">
+                <img id="mainProductImage" src="~/@(Model.ImageUrls?.FirstOrDefault() ?? "ProductImages/default-image.jpg")" class="img-fluid" style="max-width: 100%; max-height: 500px; object-fit: contain;" alt="Main Product Image">
+            </div>
+            <div class="col-md-4">
+                <table class="table text-start align-middle table-bordered table-hover">
                     <tbody>
                         <tr>
                             <th scope="row">Name</th>
@@ -46,16 +46,19 @@
                         </tr>
                         <tr>
                             <th scope="row">Price</th>
-                            <td>@Model.Price</td>
+                            <td>₦ @Model.Price</td>
                         </tr>
                     </tbody>
                 </table>
-            }
-            else
-            {
-                <p>Product details are not available.</p>
-            }
-            <a href="@Url.Action("Products", "Product")" class="btn btn-primary mt-3">Back to List</a>
+                <a href="@Url.Action("CreateOrder", "Order", new { productId = Model.Id })" class="btn btn-primary mt-3">Place Order</a>
+                <a href="@Url.Action("Products", "Product")" class="btn btn-primary mt-3">Back to List</a>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+    function displayMainImage(imageUrl) {
+        document.getElementById("mainProductImage").src = imageUrl;
+    }
+</script>

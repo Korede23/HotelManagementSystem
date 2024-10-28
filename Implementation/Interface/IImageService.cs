@@ -8,5 +8,6 @@ namespace HotelManagementSystem.Implementation.Interface
     {
         Task<BaseResponse<ImageDto>> AddImageAsync(CreateImage request);
         Task<BaseResponse<int>> AddImagesAsync(List<IFormFile> requestPhotoFiles, Guid roomId);
+        Task<List<string>> AddProductImagesAsync(IFormFileCollection files);
     }
 }

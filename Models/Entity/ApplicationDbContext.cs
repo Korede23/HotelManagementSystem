@@ -45,6 +45,8 @@ namespace HotelManagementSystem.Model.Entity
                     NormalizedUserName = "ADMIN",
                     Email = "admin@gmail.com",
                     NormalizedEmail = "ADMIN@GMAIL.COM",
+                    Address = "Lagos",
+                    PhoneNumber = "09068041575",
                     EmailConfirmed = true,
                     PasswordHash = hasher.HashPassword(null, "Admin@123"),
                     SecurityStamp = string.Empty,
@@ -65,12 +67,12 @@ namespace HotelManagementSystem.Model.Entity
                 }
             );
 
-            
+
             modelBuilder.Entity<Booking>()
-                .HasOne(b => b.Customer) 
-                .WithMany(u => u.Bookings) 
-                .HasForeignKey(b => b.CustomerId) 
-                .OnDelete(DeleteBehavior.Cascade); 
+                .HasOne(b => b.Customer)
+                .WithMany(u => u.Bookings)
+                .HasForeignKey(b => b.CustomerId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 
         public DbSet<Room> Rooms { get; set; }

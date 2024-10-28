@@ -9,6 +9,6 @@ namespace HotelManagementSystem.Dto.RequestModel
         public string Name { get; set; }
         [Required(ErrorMessage = "Price is required")]
         public decimal Price { get; set; }
-
+        public IFormFileCollection Images { get; set; }
     }
 }

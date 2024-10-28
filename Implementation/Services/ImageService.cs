@@ -11,12 +11,16 @@ namespace HotelManagementSystem.Implementation.Services
         private readonly ApplicationDbContext _dbContext;
         private readonly IFileService _fileService;
         private readonly ILogger<ImageService> _logger;
+        private readonly Microsoft.AspNetCore.Hosting.IHostingEnvironment _env;
+        private readonly string _imageFolderPath;
 
-        public ImageService(ApplicationDbContext dbContext, IFileService fileService, ILogger<ImageService> logger)
+        public ImageService(ApplicationDbContext dbContext, IFileService fileService, ILogger<ImageService> logger, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
         {
             _dbContext = dbContext;
             _fileService = fileService;
             _logger = logger;
+            _env = env;
+            _imageFolderPath = Path.Combine(env.ContentRootPath, "wwwroot", "ProductImages");
         }
 
         public async Task<BaseResponse<ImageDto>> AddImageAsync(CreateImage request)
@@ -125,5 +129,33 @@ namespace HotelManagementSystem.Implementation.Services
 
             return response;
         }
+
+        public async Task<List<string>> AddProductImagesAsync(IFormFileCollection files)
+        {
+            var imagePaths = new List<string>();
+
+            foreach (var file in files)
+            {
+                if (file.Length > 0)
+                {
+                    
+                    var fileName = $"{Path.GetFileNameWithoutExtension(file.FileName)}_{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+
+                    var filePath = Path.Combine(_imageFolderPath, fileName);
+
+                    Directory.CreateDirectory(_imageFolderPath);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    imagePaths.Add("ProductImages/" + fileName); 
+                }
+            }
+
+            return imagePaths;
+        }
+
     }
 }

@@ -4,6 +4,7 @@ using HotelManagementSystem.Dto.ResponseModel;
 using HotelManagementSystem.Implementation.Interface;
 using HotelManagementSystem.Model.Entity;
 using HotelManagementSystem.Models.Entity;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
@@ -14,14 +15,17 @@ namespace HotelManagementSystem.Implementation.Services
     {
         private readonly ApplicationDbContext _dbContext;
         private readonly ILogger<RequestPasswordReset> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly UserManager<User> _userManager;
         private readonly IEmailService _emailSender;
 
-        public RequestPasswordResetService(ApplicationDbContext dbContext, ILogger<RequestPasswordReset> logger, UserManager<User> userManager, IEmailService emailSender)
+        public RequestPasswordResetService(ApplicationDbContext dbContext, ILogger<RequestPasswordReset> logger,
+          UserManager<User> userManager, IEmailService emailSender , IHttpContextAccessor httpContextAccessor)
         {
             _dbContext = dbContext;
             _logger = logger;
             _userManager = userManager;
+            _httpContextAccessor = httpContextAccessor;
             _emailSender = emailSender;
         }
         public async Task<BaseResponse<bool>> CreateNewPassWord(CreateNewPassWord request)
@@ -43,7 +47,25 @@ namespace HotelManagementSystem.Implementation.Services
 
                 // Generate the reset code
                 string resetCode = GenerateRandomCode(8);
+                var userPrincipal = _httpContextAccessor.HttpContext?.User;
+                if (userPrincipal == null)
+                {
+                    return new BaseResponse<bool>
+                    {
+                        Success = false,
+                        Message = "User not authenticated"
+                    };
+                }
 
+                var username = await _userManager.GetUserAsync(userPrincipal);
+                if (user == null)
+                {
+                    return new BaseResponse<bool>
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    };
+                }
                 var passwordResetRequest = new RequestPasswordReset
                 {
                     Email = request.Email,
@@ -51,7 +73,9 @@ namespace HotelManagementSystem.Implementation.Services
                     UserId = user.Id,
                     RequestedAt = DateTime.UtcNow,
                     CreatedTime = DateTime.Now,
-                    IsUsed = false
+                    IsUsed = false,
+                    CreatedBy = username.UserName
+
                 };
 
                 // Save to the database

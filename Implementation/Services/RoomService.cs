@@ -4,6 +4,8 @@ using HotelManagementSystem.Dto.ResponseModel;
 using HotelManagementSystem.Implementation.Interface;
 using HotelManagementSystem.Model.Entity;
 using HotelManagementSystem.Model.Entity.Enum;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Data;
 
@@ -13,12 +15,17 @@ namespace HotelManagementSystem.Implementation.Services
     {
         private readonly ApplicationDbContext _dbContext;
         private readonly IImageService _imageService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly UserManager<User> _userManager;
         private readonly ILogger<RoomService> _logger;
 
-        public RoomService(ApplicationDbContext dbContext, IImageService imageService, ILogger<RoomService> logger)
+        public RoomService(ApplicationDbContext dbContext, IImageService imageService, IHttpContextAccessor httpContextAccessor,
+         UserManager<User> userManager, ILogger<RoomService> logger)
         {
             _dbContext = dbContext;
             _imageService = imageService;
+            _httpContextAccessor = httpContextAccessor;
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -30,10 +37,10 @@ namespace HotelManagementSystem.Implementation.Services
             {
                 if (request != null)
                 {
-                    // Check if the room already exists
-                    var existingRoom = await _dbContext.Rooms.FirstOrDefaultAsync(x => x.Id == request.RoomId);
 
-                    if (existingRoom != null)
+                    var existingRoom = await _dbContext.Rooms.AnyAsync(x => x.Id == request.RoomId);
+
+                    if (existingRoom != false)
                     {
                         _logger.LogWarning("Room already exists: {RoomName}", request.RoomName);
                         return new BaseResponse<Guid>
@@ -55,8 +62,27 @@ namespace HotelManagementSystem.Implementation.Services
                             Hasherror = true
                         };
                     }
+                    var userPrincipal = _httpContextAccessor.HttpContext?.User;
+                    if (userPrincipal == null)
+                    {
+                        return new BaseResponse<Guid>
+                        {
+                            Success = false,
+                            Message = "User not authenticated"
+                        };
+                    }
 
-                    // Create a new room
+                    var user = await _userManager.GetUserAsync(userPrincipal);
+                    if (user == null)
+                    {
+                        return new BaseResponse<Guid>
+                        {
+                            Success = false,
+                            Message = "User not found"
+                        };
+                    }
+
+
                     var room = new Room
                     {
                         RoomName = request.RoomName,
@@ -69,6 +95,7 @@ namespace HotelManagementSystem.Implementation.Services
                         MaxOccupancy = request.MaxOccupancy,
                         AmenityId = request.AmenityId,
                         Amenity = request.Amenity,
+                         CreatedBy = user.UserName
                     };
 
                     await _dbContext.Rooms.AddAsync(room);
@@ -343,7 +370,7 @@ namespace HotelManagementSystem.Implementation.Services
                         x.RoomName.Contains(searchTerm) ||
                         x.Amenity.AmenityName.Contains(searchTerm) ||
                         x.RoomNumber.Equals(searchTerm));
-                        
+
                 }
 
                 if (roomRate > 0)

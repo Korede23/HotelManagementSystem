@@ -5,6 +5,7 @@ using HotelManagementSystem.Implementation.Interface;
 using HotelManagementSystem.Model.Entity;
 using HotelManagementSystem.Model.Entity.Enum;
 using HotelManagementSystem.Models.Entity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 namespace HotelManagementSystem.Implementation.Services
 {
@@ -13,12 +14,18 @@ namespace HotelManagementSystem.Implementation.Services
         private readonly ApplicationDbContext _dbContext;
         private readonly IBookingServices _bookingServices;
         private readonly IUserServices _userServices;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly UserManager<User> _userManager;
         private readonly ILogger<CustomerStatusServices> _logger;
 
-        public CustomerStatusServices(ApplicationDbContext dbContext, IBookingServices bookingServices, IUserServices userServices, ILogger<CustomerStatusServices> logger)
+        public CustomerStatusServices(ApplicationDbContext dbContext, IBookingServices bookingServices,
+         IHttpContextAccessor httpContextAccessor,
+         UserManager<User> userManager, IUserServices userServices, ILogger<CustomerStatusServices> logger)
         {
             _dbContext = dbContext;
             _bookingServices = bookingServices;
+            _httpContextAccessor = httpContextAccessor;
+            _userManager = userManager;
             _userServices = userServices;
             _logger = logger;
         }
@@ -60,12 +67,33 @@ namespace HotelManagementSystem.Implementation.Services
                     };
                 }
 
+                var userPrincipal = _httpContextAccessor.HttpContext?.User;
+                if (userPrincipal == null)
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "User not authenticated"
+                    };
+                }
+
+                var user = await _userManager.GetUserAsync(userPrincipal);
+                if (user == null)
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    };
+                }
+
                 var customerStatus = new CustomerStatus
                 {
                     BookingId = bookingId,
                     CustomerId = customerId,
                     CustomerName = customer.FullName,
                     CheckInDate = DateTime.Now,
+                    CreatedBy = user.UserName
                 };
                 _dbContext.CustomerStatuses.Add(customerStatus);
                 room.RoomStatus = RoomStatus.CheckedIn;
@@ -133,7 +161,7 @@ namespace HotelManagementSystem.Implementation.Services
                     };
                 }
                 room.RoomStatus = RoomStatus.Pending;
-                room.Availability = RoomAvailability.Available; 
+                room.Availability = RoomAvailability.Available;
                 _dbContext.CustomerStatuses.Update(customerStatus);
                 _dbContext.Rooms.Update(room);
                 await _dbContext.SaveChangesAsync();
@@ -162,7 +190,19 @@ namespace HotelManagementSystem.Implementation.Services
         public async Task<List<CustomerStatusDto>> GetCustomerStatus()
         {
             _logger.LogInformation("GetCustomerStatus called");
+            var userPrincipal = _httpContextAccessor.HttpContext?.User;
+            if (userPrincipal == null)
+            {
+                return new List<CustomerStatusDto> { };
+            }
+
+            var user = await _userManager.GetUserAsync(userPrincipal);
+            if (user == null)
+            {
+                return new List<CustomerStatusDto> { };
+            }
             return await _dbContext.CustomerStatuses
+                .Where(x => x.CreatedBy == user.UserName)
                 .Select(x => new CustomerStatusDto()
                 {
                     Id = x.Id,

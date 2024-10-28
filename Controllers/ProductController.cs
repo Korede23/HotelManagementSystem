@@ -54,7 +54,8 @@ namespace HotelManagementSystem.Controllers
                 _notyf.Success(product.Message, 3);
                 return RedirectToAction("Products");
             }
-            return BadRequest();
+            _notyf.Error(product.Message, 3);
+            return RedirectToAction("Products");
         }
 
 
@@ -112,15 +113,29 @@ namespace HotelManagementSystem.Controllers
 
         }
 
+
         [HttpGet("get-product-by-id/{id}")]
         public async Task<IActionResult> GetAllProductById(Guid id)
         {
             var product = await _productServices.GetAllProductsByIdAsync(id);
-            if (product.Success)
+            if (product.Success && product.Data != null)
             {
-                return View(product.Data);
+                return View(product.Data); 
             }
             return RedirectToAction("Products");
+        }
+
+        [HttpGet("get-products-by-pagination")]
+        public async Task<IActionResult> GetProducts(int pageNumber = 1, int pageSize = 3, decimal price = 0, string searchTerm = null)
+        {
+            var product = await _productServices.GetAllProductsByPaginationAsync(pageNumber, pageSize, price, searchTerm);
+            if (product.Success)
+            {
+                var paginatedList = new PaginatedList<ProductDto>(product.Data, product.TotalRecords, pageNumber, pageSize);
+                return View(paginatedList);
+            }
+            _notyf.Error(product.Message, 3);
+            return View(new PaginatedList<ProductDto>(new List<ProductDto>(), 0, pageNumber, pageSize));
         }
 
 

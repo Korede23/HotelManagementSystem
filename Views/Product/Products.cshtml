@@ -10,7 +10,6 @@
         Layout = "_Layout";
     }
 }
-<!-- Recent Sales Start -->
 <div class="container-fluid pt-4 px-4">
     <div class="bg-secondary text-center rounded p-4">
         @if (User.IsInRole("Admin"))
@@ -43,7 +42,7 @@
                                     @if (User.IsInRole("Admin"))
                                     {
                                         <a asp-action="EditProduct" asp-route-id="@item.Id">Edit <bold>|</bold> </a>
-                                        <a asp-action="DeleteProduct" asp-route-id-="@item.Id">Delete <bold>|</bold></a>
+                                        <a asp-controller="Product" asp-route-id="@item.Id" asp-action="DeleteProduct">Delete |</a>
                                     }
                                     <a asp-action="GetAllProductById" asp-route-id="@item.Id">ViewDetails</a>
                                 </td>

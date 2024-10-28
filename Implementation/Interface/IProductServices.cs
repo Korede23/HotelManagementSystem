@@ -14,5 +14,10 @@ namespace HotelManagementSystem.Implementation.Interface
         Task<BaseResponse<IList<ProductDto>>> GetAllProductAsync();
         Task<List<ProductDto>> GetProduct();
         Task<BaseResponse<ProductDto>> UpdateProduct(Guid Id, UpdateProduct request);
+        Task<PaginatedResponse<List<ProductDto>>> GetAllProductsByPaginationAsync(
+                                                 int pageNumber,
+                                                 int pageSize,
+                                                 decimal price,
+                                                 string searchTerm = null);
     }
 }

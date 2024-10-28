@@ -2,6 +2,7 @@
 using HotelManagementSystem.Dto.ResponseModel;
 using HotelManagementSystem.Implementation.Interface;
 using HotelManagementSystem.Model.Entity;
+using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
 using System.Text;
 namespace HotelManagementSystem.Implementation.Services
@@ -13,18 +14,24 @@ namespace HotelManagementSystem.Implementation.Services
         private readonly ILogger<PaystackService> _logger;
         private readonly HttpClient _httpClient;
         private readonly ApplicationDbContext _dbcontext;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly UserManager<User> _userManager;
         private readonly IUserServices _userServices;
         private readonly IOrderServices _orderServices;
         private readonly string _secretKey;
 
 
-        public PaystackService(ApplicationDbContext dbContext, IBookingServices bookingServices, ILogger<PaystackService> logger, HttpClient httpClient, ApplicationDbContext dbcontext, IConfiguration configuration, IUserServices userServices, IOrderServices orderServices)
+        public PaystackService(ApplicationDbContext dbContext, IBookingServices bookingServices, ILogger<PaystackService> logger,
+         IHttpContextAccessor httpContextAccessor,
+         UserManager<User> userManager, HttpClient httpClient, ApplicationDbContext dbcontext, IConfiguration configuration, IUserServices userServices, IOrderServices orderServices)
         {
             _dbContext = dbContext;
             _bookingServices = bookingServices;
             _logger = logger;
             _httpClient = httpClient;
             _dbcontext = dbcontext;
+            _httpContextAccessor = httpContextAccessor;
+            _userManager = userManager;
             _userServices = userServices;
             _orderServices = orderServices;
             _secretKey = configuration["Paystack:SecretKey"];
@@ -56,6 +63,26 @@ namespace HotelManagementSystem.Implementation.Services
                         Success = false
                     };
                 }
+                var userPrincipal = _httpContextAccessor.HttpContext?.User;
+                if (userPrincipal == null)
+                {
+                    return new BaseResponse<InitializePaymentResponseDto>
+                    {
+                        Success = false,
+                        Message = "User not authenticated"
+                    };
+                }
+
+                var userName = await _userManager.GetUserAsync(userPrincipal);
+                if (user == null)
+                {
+                    return new BaseResponse<InitializePaymentResponseDto>
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    };
+                }
+
                 var payment = new Payment
                 {
                     BookingId = bookingId,
@@ -65,6 +92,7 @@ namespace HotelManagementSystem.Implementation.Services
                     DateRequested = DateTime.Now,
                     TransactionReference = Guid.NewGuid().ToString("N"),
                     CreatedOn = DateTime.Now,
+                    CreatedBy = userName.UserName
                 };
 
                 _dbcontext.Payments.Add(payment);

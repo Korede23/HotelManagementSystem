@@ -36,7 +36,7 @@ namespace HotelManagementSystem.Implementation.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while generating photo.");
-                throw; // Optionally rethrow or handle as needed
+                throw;
             }
         }
 

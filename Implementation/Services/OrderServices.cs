@@ -3,8 +3,10 @@ using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Dto.ResponseModel;
 using HotelManagementSystem.Implementation.Interface;
 using HotelManagementSystem.Model.Entity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace HMS.Implementation.Services
 {
@@ -12,12 +14,18 @@ namespace HMS.Implementation.Services
     {
         private readonly ApplicationDbContext _dbContext;
         private readonly IProductServices _productServices;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly UserManager<User> _userManager;
         private readonly ILogger<OrderServices> _logger;
 
-        public OrderServices(ApplicationDbContext dbContext, IProductServices productServices, ILogger<OrderServices> logger)
+        public OrderServices(ApplicationDbContext dbContext, IProductServices productServices,
+            IHttpContextAccessor httpContextAccessor, UserManager<User> userManager,
+             ILogger<OrderServices> logger)
         {
             _dbContext = dbContext;
             _productServices = productServices;
+            _httpContextAccessor = httpContextAccessor;
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -25,61 +33,55 @@ namespace HMS.Implementation.Services
         {
             _logger.LogInformation("CreateOrder method called.");
 
-            try
-            {
-                if (request != null)
-                {
-                    // Retrieve the product from the database
-                    var product = await _dbContext.Products.FindAsync(request.ProductId);
-                    if (product == null)
-                    {
-                        _logger.LogWarning("Product not found for ProductId: {ProductId}", request.ProductId);
-                        return new BaseResponse<Guid>
-                        {
-                            Success = false,
-                            Message = "Product not found",
-                            Hasherror = true
-                        };
-                    }
 
-                    var order = new Order
-                    {
-                        ProductId = request.ProductId,
-                        OrderDate = DateTime.Now,
-                        TotalAmount = product.Price
-                    };
-                    _dbContext.Orders.Add(order);
-                }
-
-                if (await _dbContext.SaveChangesAsync() > 0)
-                {
-                    _logger.LogInformation("Order placed successfully.");
-                    return new BaseResponse<Guid>
-                    {
-                        Success = true,
-                        Message = "Order has been placed successfully",
-                    };
-                }
-                else
-                {
-                    _logger.LogWarning("Order placement failed.");
-                    return new BaseResponse<Guid>
-                    {
-                        Message = "Order failed"
-                    };
-                }
-            }
-            catch (Exception ex)
+            var userPrincipal = _httpContextAccessor.HttpContext?.User;
+            if (userPrincipal == null)
             {
-                _logger.LogError(ex, "Order creation failed.");
                 return new BaseResponse<Guid>
                 {
                     Success = false,
-                    Message = "Order failed, unable to create order",
-                    Hasherror = true
+                    Message = "User not authenticated"
                 };
             }
+
+            var user = await _userManager.GetUserAsync(userPrincipal);
+            if (user == null)
+            {
+                return new BaseResponse<Guid>
+                {
+                    Success = false,
+                    Message = "User not found"
+                };
+            }
+
+            var product = await _dbContext.Products.FindAsync(request.ProductId);
+            if (product == null)
+            {
+                return new BaseResponse<Guid>
+                {
+                    Success = false,
+                    Message = "Product not found"
+                };
+            }
+            var order = new Order
+            {
+                ProductId = request.ProductId,
+                OrderDate = DateTime.Now,
+                TotalAmount = product.Price,
+                CreatedBy = user.UserName
+            };
+
+            _dbContext.Orders.Add(order);
+            await _dbContext.SaveChangesAsync();
+
+            return new BaseResponse<Guid>
+            {
+                Success = true,
+                Message = "Order created successfully",
+                Data = order.Id
+            };
         }
+
 
         public List<SelectProductDto> GetProductSelect()
         {
@@ -143,23 +145,36 @@ namespace HMS.Implementation.Services
             }
         }
 
-        public async Task<List<OrderDto>> GetOrder()
+        public async Task<List<OrderDto>> GetOrders()
         {
-            _logger.LogInformation("GetOrder method called.");
+            _logger.LogInformation("GetOrders method called.");
+
+            var userPrincipal = _httpContextAccessor.HttpContext?.User;
+            if (userPrincipal == null)
+            {
+                return new List<OrderDto>();
+            }
+
+            var user = await _userManager.GetUserAsync(userPrincipal);
+            if (user == null)
+            {
+                return new List<OrderDto>();
+            }
 
             var orders = await _dbContext.Orders
-                .Select(x => new OrderDto()
+                .Where(o => o.CreatedBy == user.UserName)
+                .Select(o => new OrderDto
                 {
-                    Id = x.Id,
-                    OrderDate = x.OrderDate,
-                    TotalAmount = x.TotalAmount,
-                    ProductName = x.Products.Name,
+                    Id = o.Id,
+                    OrderDate = o.OrderDate,
+                    TotalAmount = o.TotalAmount,
+                    ProductName = o.Products.Name
                 })
                 .ToListAsync();
 
-            _logger.LogInformation("{OrderCount} orders retrieved.", orders.Count);
             return orders;
         }
+
 
         public async Task<BaseResponse<OrderDto>> GetOrderByIdAsync(Guid Id)
         {

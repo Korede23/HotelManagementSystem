@@ -1,9 +1,11 @@
 ﻿using AspNetCoreHero.ToastNotification.Abstractions;
 using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Implementation.Interface;
+using HotelManagementSystem.Model.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Security.Claims;
 
 namespace HotelManagementSystem.Controllers
 {
@@ -11,11 +13,13 @@ namespace HotelManagementSystem.Controllers
     public class OrderController : Controller
     {
         private readonly IOrderServices _orderServices;
+        private readonly IProductServices _productServices;
         private readonly INotyfService _notyf;
 
-        public OrderController(IOrderServices orderServices , INotyfService notyf)
+        public OrderController(IOrderServices orderServices, IProductServices productServices, INotyfService notyf)
         {
             _orderServices = orderServices;
+            _productServices = productServices;
             _notyf = notyf;
         }
 
@@ -23,34 +27,49 @@ namespace HotelManagementSystem.Controllers
         [HttpGet("get-order")]
         public async Task<IActionResult> Orders()
         {
-            var order = await _orderServices.GetOrder();
+            var order = await _orderServices.GetOrders();
             return View(order);
-           // return View(new List<OrderDto>());
+            // return View(new List<OrderDto>());
         }
 
         [HttpGet("create-order")]
-        public IActionResult CreateOrder()
+        public async Task<IActionResult> CreateOrder(Guid productId)
         {
-            var products = _orderServices.GetProductSelect();
-            ViewBag.Products = new SelectList(products, "Id", "ProductName");
-
+            var products = await _productServices.GetAllProductsByIdAsync(productId);
+            if (products.Success)
+            {
+                var product = products.Data.Name;
+                ViewBag.ProductName = product;
+            }
             return View();
         }
 
 
-        
+
 
         [HttpPost("create-order")]
         public async Task<IActionResult> CreateOrder(CreateOrder request)
         {
-            var order = await _orderServices.CreateOrder(request);
-            if (order.Success)
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (Guid.TryParse(userId, out var customerId))
             {
-                _notyf.Success(order.Message, 3);
-                return RedirectToAction("Orders");
+                request.UserId = customerId.ToString();
+
+                var order = await _orderServices.CreateOrder(request);
+                if (order.Success)
+                {
+                    _notyf.Success(order.Message, 3);
+                    var productId = order.Data;
+                    return RedirectToAction("InitiatePaymentForm", "Payment", new { userId = customerId, productId });
+                }
+                else
+                {
+                    _notyf.Error(order.Message, 3);
+                    return RedirectToAction("GetProducts", "Product");
+                }
             }
-            _notyf.Error(order.Message);
-            return BadRequest();
+            return RedirectToAction("GetProducts");
         }
 
 
@@ -126,7 +145,7 @@ namespace HotelManagementSystem.Controllers
         }
 
 
-       
+
     }
 }
 

@@ -7,6 +7,7 @@ namespace HotelManagementSystem.Dto
         public Guid Id { get; set; }
         public string AmenityName { get; set; }
         public string  AmenityType { get; set; }
+        public string CreatedBy { get; set; }
     }
 
     

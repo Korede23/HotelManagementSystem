@@ -4,6 +4,7 @@ using HotelManagementSystem.Dto.ResponseModel;
 using HotelManagementSystem.Implementation.Interface;
 using HotelManagementSystem.Model.Entity;
 using HotelManagementSystem.Model.Entity.Enum;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagementSystem.Implementation.Services
@@ -12,12 +13,18 @@ namespace HotelManagementSystem.Implementation.Services
     {
         private readonly ApplicationDbContext _dbContext;
         private readonly ICustomerServices _customerServices;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly UserManager<User> _userManager;
         private readonly ILogger<BookingService> _logger;
 
-        public BookingService(ApplicationDbContext dbContext, ICustomerServices customerServices, ILogger<BookingService> logger)
+        public BookingService(ApplicationDbContext dbContext, ICustomerServices customerServices,
+         IHttpContextAccessor httpContextAccessor,
+         UserManager<User> userManager, ILogger<BookingService> logger)
         {
             _dbContext = dbContext;
             _customerServices = customerServices;
+            _httpContextAccessor = httpContextAccessor;
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -38,18 +45,37 @@ namespace HotelManagementSystem.Implementation.Services
                     };
                 }
 
-                var existingBooking = await _dbContext.Bookings
-                                                        .Where(b => b.RoomId == request.RoomId)
-                                                        .FirstOrDefaultAsync();
+                //var existingBooking = await _dbContext.Bookings
+                //                                        .Where(b => b.RoomId == request.RoomId)
+                //                                        .FirstOrDefaultAsync();
 
-                if (existingBooking != null)
+                //if (existingBooking != null)
+                //{
+                //    _logger.LogWarning("Room is already booked for RoomId: {RoomId}", request.RoomId);
+                //    return new BaseResponse<Guid>
+                //    {
+                //        Success = false,
+                //        Message = "Room is not available at the moment.",
+                //        Hasherror = true
+                //    };
+                //}
+                var userPrincipal = _httpContextAccessor.HttpContext?.User;
+                if (userPrincipal == null)
                 {
-                    _logger.LogWarning("Room is already booked for RoomId: {RoomId}", request.RoomId);
                     return new BaseResponse<Guid>
                     {
                         Success = false,
-                        Message = "Room is not available at the moment.",
-                        Hasherror = true
+                        Message = "User not authenticated"
+                    };
+                }
+
+                var user = await _userManager.GetUserAsync(userPrincipal);
+                if (user == null)
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "User not found"
                     };
                 }
 
@@ -60,6 +86,7 @@ namespace HotelManagementSystem.Implementation.Services
                     Email = request.Email,
                     PhoneNumber = request.PhoneNumber,
                     TotalCost = room.RoomRate,
+                    CreatedBy = user.UserName
                 };
 
                 _dbContext.Bookings.Add(booking);
@@ -104,7 +131,20 @@ namespace HotelManagementSystem.Implementation.Services
         public async Task<List<BookingDto>> GetBooking()
         {
             _logger.LogInformation("GetBooking method called.");
+            var userPrincipal = _httpContextAccessor.HttpContext?.User;
+            if (userPrincipal == null)
+            {
+                return new List<BookingDto>();
+            }
+
+            var user = await _userManager.GetUserAsync(userPrincipal);
+            if (user == null)
+            {
+                return new List<BookingDto>();
+            }
             var bookings = await _dbContext.Bookings
+                .Include(x => x.Rooms)
+                .Where(o => o.CreatedBy == user.UserName)
                 .Select(x => new BookingDto()
                 {
                     Id = x.Id,
@@ -113,10 +153,12 @@ namespace HotelManagementSystem.Implementation.Services
                     PhoneNumber = x.PhoneNumber,
                     TotalCost = x.TotalCost,
                     RoomName = x.Rooms.RoomName,
+                    Status = x.Rooms.RoomStatus
                 }).ToListAsync();
             _logger.LogInformation("Retrieved {Count} bookings.", bookings.Count);
             return bookings;
         }
+
 
         public async Task<BaseResponse<Guid>> DeleteBookingAsync(Guid Id)
         {
@@ -211,17 +253,21 @@ namespace HotelManagementSystem.Implementation.Services
         public async Task<BaseResponse<BookingDto>> GetBookingByIdAsync(Guid Id)
         {
             _logger.LogInformation("GetBookingByIdAsync method called with Id: {Id}", Id);
-            var bookings = await _dbContext.Bookings
-             .Where(x => x.Id == Id)
-             .Select(x => new BookingDto()
-             {
-                 Id = x.Id,
-                 Rooms = x.Rooms,
-                 RoomId = x.RoomId,
-                 Email = x.Email,
-                 PhoneNumber = x.PhoneNumber,
-                 TotalCost = x.TotalCost,
-             }).FirstOrDefaultAsync();
+         var bookings = await _dbContext.Bookings
+        .Include(x => x.Rooms)
+        .Where(x => x.Id == Id)
+        .Select(x => new BookingDto()
+        {
+            Id = x.Id,
+            Rooms = x.Rooms,
+            RoomId = x.RoomId,
+            Email = x.Email,
+            PhoneNumber = x.PhoneNumber,
+            TotalCost = x.TotalCost,
+            RoomName = x.Rooms.RoomName,
+            Status = x.Rooms.RoomStatus
+        })
+        .FirstOrDefaultAsync();
             if (bookings != null)
             {
                 _logger.LogInformation("Booking retrieved successfully for Id: {Id}", Id);

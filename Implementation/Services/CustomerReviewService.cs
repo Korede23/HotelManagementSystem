@@ -4,6 +4,7 @@ using HotelManagementSystem.Dto.ResponseModel;
 using HotelManagementSystem.Implementation.Interface;
 using HotelManagementSystem.Model.Entity;
 using HotelManagementSystem.Model.Entity.Enum;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 namespace HotelManagementSystem.Implementation.Services
 {
@@ -11,12 +12,18 @@ namespace HotelManagementSystem.Implementation.Services
     {
         private readonly ApplicationDbContext _dbContext;
         private readonly ICustomerServices _customerServices;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly UserManager<User> _userManager;
         private readonly ILogger<CustomerReviewService> _logger;
 
-        public CustomerReviewService(ApplicationDbContext dbContext, ICustomerServices customerServices, ILogger<CustomerReviewService> logger)
+        public CustomerReviewService(ApplicationDbContext dbContext, ICustomerServices customerServices,
+         IHttpContextAccessor httpContextAccessor,
+         UserManager<User> userManager, ILogger<CustomerReviewService> logger)
         {
             _dbContext = dbContext;
             _customerServices = customerServices;
+            _httpContextAccessor = httpContextAccessor;
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -36,10 +43,30 @@ namespace HotelManagementSystem.Implementation.Services
                         Hasherror = true
                     };
                 }
+                var userPrincipal = _httpContextAccessor.HttpContext?.User;
+                if (userPrincipal == null)
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "User not authenticated"
+                    };
+                }
+
+                var user = await _userManager.GetUserAsync(userPrincipal);
+                if (user == null)
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    };
+                }
                 var review = new CustomerReview
                 {
                     Comment = request.Comment,
                     Rating = request.Rating,
+                    CreatedBy = user.UserName
                 };
                 _dbContext.CustomerReviews.Add(review);
                 if (await _dbContext.SaveChangesAsync() > 0)

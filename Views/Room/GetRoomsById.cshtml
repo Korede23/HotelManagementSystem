@@ -1,9 +1,17 @@
 ﻿@model HotelManagementSystem.Dto.RoomDto
 
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Room Details";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Rooms";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
 }
+
 
 <div class="container-fluid pt-4 px-4">
     <div class="bg-secondary text-center rounded p-4">
@@ -91,7 +99,8 @@
                         <a href="@Url.Action("Rooms", "Room")" class="btn btn-primary">Back to List </a>
                     }
                     <a href="@Url.Action("GetRooms", "Room")" class="btn btn-primary">Back to List</a>
-                    <a href="@Url.Action("CreateBooking","Booking")" class="btn btn-primary">Book Now</a>
+                    <a href="@Url.Action("CreateBooking", "Booking", new { roomId = Model.Id })" class="btn btn-primary">Book Now</a>
+
                 </div>
             }
             else

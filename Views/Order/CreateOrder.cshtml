@@ -18,10 +18,9 @@
                 <form asp-controller="Order" asp-action="CreateOrder">
                     <div class="row">
                         <div class="col mb-6">
-                            <label class="form-label">Product</label>
-                            <select class="form-select" asp-for="ProductId" asp-items="@(ViewBag.Products as SelectList)" required>
-                                <option value="">Select Product</option>
-                            </select>
+                            <label class="form-label">Product Name</label>
+                            <input type="text" class="form-control" value="@ViewBag.ProductName" readonly>
+                            <input type="hidden" asp-for="ProductId" />
 
                             <div>
                            

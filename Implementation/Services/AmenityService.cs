@@ -2,41 +2,89 @@
 using HotelManagementSystem.Dto;
 using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Dto.ResponseModel;
+using HotelManagementSystem.Implementation.Services;
 using HotelManagementSystem.Model.Entity;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 namespace HMS.Implementation.Services
 {
     public class AmenityService : IAmenityService
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly UserManager<User> _userManager;
         private readonly ILogger<AmenityService> _logger;
 
-        public AmenityService(ApplicationDbContext dbContext, ILogger<AmenityService> logger)
+        public AmenityService(ApplicationDbContext dbContext, IHttpContextAccessor httpContextAccessor, UserManager<User> userManager, ILogger<AmenityService> logger)
         {
             _dbContext = dbContext;
+            _userManager = userManager;
+            _httpContextAccessor = httpContextAccessor;
             _logger = logger;
         }
 
         public async Task<BaseResponse<IList<AmenityDto>>> CreateAmenity(CreateAmenityRequestModel request)
         {
             _logger.LogInformation("CreateAmenity called");
+
             try
             {
-                if (request != null)
+                if (request == null)
                 {
-                    var roomAmenity = new Amenity
+                    return new BaseResponse<IList<AmenityDto>>
                     {
-                        AmenityName = request.AmenityName,
+                        Success = false,
+                        Message = "Invalid request"
                     };
-                    _dbContext.Amenities.Add(roomAmenity);
                 }
+
+                var userPrincipal = _httpContextAccessor.HttpContext?.User;
+                if (userPrincipal == null)
+                {
+                    return new BaseResponse<IList<AmenityDto>>
+                    {
+                        Success = false,
+                        Message = "User not authenticated"
+                    };
+                }
+
+                var user = await _userManager.GetUserAsync(userPrincipal);
+                if (user == null)
+                {
+                    return new BaseResponse<IList<AmenityDto>>
+                    {
+                        Success = false,
+                        Message = "User not found"
+                    };
+                }
+
+                var roomAmenity = new Amenity
+                {
+                    AmenityName = request.AmenityName,
+                    CreatedBy = user.UserName
+                };
+
+                _dbContext.Amenities.Add(roomAmenity);
+
                 if (await _dbContext.SaveChangesAsync() > 0)
                 {
+                    var amenities = await _dbContext.Amenities
+                        .Select(a => new AmenityDto
+                        {
+                            Id = a.Id,
+                            AmenityName = a.AmenityName,
+                            CreatedBy = a.CreatedBy
+                        })
+                        .ToListAsync();
+
                     _logger.LogInformation("Amenity created successfully");
+
                     return new BaseResponse<IList<AmenityDto>>
                     {
                         Success = true,
-                        Message = "Successful"
+                        Message = "Amenity created successfully",
+                        Data = amenities
                     };
                 }
                 else
@@ -45,7 +93,7 @@ namespace HMS.Implementation.Services
                     return new BaseResponse<IList<AmenityDto>>
                     {
                         Success = false,
-                        Message = "Failed"
+                        Message = "Amenity creation failed"
                     };
                 }
             }
@@ -55,7 +103,7 @@ namespace HMS.Implementation.Services
                 return new BaseResponse<IList<AmenityDto>>
                 {
                     Success = false,
-                    Message = "Failed"
+                    Message = "Failed due to an exception"
                 };
             }
         }

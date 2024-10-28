@@ -3,6 +3,7 @@ using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Dto.ResponseModel;
 using HotelManagementSystem.Implementation.Interface;
 using HotelManagementSystem.Model.Entity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagementSystem.Implementation.Services
@@ -11,12 +12,18 @@ namespace HotelManagementSystem.Implementation.Services
     {
         private readonly ApplicationDbContext _dbContext;
         private readonly IImageService _imageService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly UserManager<User> _userManager;
         private readonly ILogger<ProductServices> _logger;
 
-        public ProductServices(ApplicationDbContext dbContext, IImageService imageService, ILogger<ProductServices> logger)
+        public ProductServices(ApplicationDbContext dbContext, IImageService imageService,
+          IHttpContextAccessor httpContextAccessor,
+         UserManager<User> userManager, ILogger<ProductServices> logger)
         {
             _dbContext = dbContext;
             _imageService = imageService;
+            _httpContextAccessor = httpContextAccessor;
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -26,12 +33,41 @@ namespace HotelManagementSystem.Implementation.Services
 
             if (request == null)
             {
-                _logger.LogWarning("CreateProduct request is null.");
                 return new BaseResponse<Guid>
                 {
                     Success = false,
                     Message = "Invalid product data.",
                     Hasherror = true
+                };
+            }
+            var checkIfProductExist = await _dbContext.Products
+            .FirstOrDefaultAsync(x => x.Id == request.Id);
+
+            if (checkIfProductExist != null)
+            {
+                return new BaseResponse<Guid>
+                {
+                    Success = false,
+                    Message = "Product already exists"
+                };
+            }
+            var userPrincipal = _httpContextAccessor.HttpContext?.User;
+            if (userPrincipal == null)
+            {
+                return new BaseResponse<Guid>
+                {
+                    Success = false,
+                    Message = "User not authenticated"
+                };
+            }
+
+            var user = await _userManager.GetUserAsync(userPrincipal);
+            if (user == null)
+            {
+                return new BaseResponse<Guid>
+                {
+                    Success = false,
+                    Message = "User not found"
                 };
             }
 
@@ -41,34 +77,27 @@ namespace HotelManagementSystem.Implementation.Services
                 {
                     Id = request.Id,
                     Name = request.Name,
-                    Price = request.Price
+                    Price = request.Price,
+                    CreatedBy = user.UserName
+
                 };
 
+                if (request.Images != null && request.Images.Count > 0)
+                {
+
+                    var imageFilenames = await _imageService.AddProductImagesAsync(request.Images);
+                    product.ImageUrls = string.Join(",", imageFilenames);
+                }
+
                 _dbContext.Products.Add(product);
-                var result = await _dbContext.SaveChangesAsync();
+                await _dbContext.SaveChangesAsync();
 
-                if (result > 0)
+                return new BaseResponse<Guid>
                 {
-                    //await _imageService.AddImagesAsync(request.Images, product.Id);
-                    _logger.LogInformation("Product created successfully with name: {ProductName}", request.Name);
-
-                    return new BaseResponse<Guid>
-                    {
-                        Success = true,
-                        Message = "Product Created Successfully",
-                        Data = product.Id
-                    };
-                }
-                else
-                {
-                    _logger.LogWarning("Failed to create product with name: {ProductName}", request.Name);
-                    return new BaseResponse<Guid>
-                    {
-                        Success = false,
-                        Message = "Failed to Create Product",
-                        Hasherror = true
-                    };
-                }
+                    Success = true,
+                    Message = "Product Created Successfully",
+                    Data = product.Id
+                };
             }
             catch (Exception ex)
             {
@@ -83,6 +112,8 @@ namespace HotelManagementSystem.Implementation.Services
         }
 
 
+
+
         public async Task<List<ProductDto>> GetProduct()
         {
             _logger.LogInformation("Retrieving all products as list");
@@ -91,12 +122,7 @@ namespace HotelManagementSystem.Implementation.Services
                 {
                     Id = x.Id,
                     Name = x.Name,
-                    Price = x.Price,
-                    Images = x.Images.Select(x => new Dto.ImageDto
-                    {
-                        Id = x.Id,
-                        ImagePath = x.ImagePath,
-                    }).ToList()
+                    Price = x.Price
                 }).ToListAsync();
         }
 
@@ -146,29 +172,39 @@ namespace HotelManagementSystem.Implementation.Services
 
         public async Task<BaseResponse<ProductDto>> GetAllProductsByIdAsync(Guid id)
         {
-            _logger.LogInformation("Retrieving product with ID: {ProductId}", id);
+            _logger.LogInformation("Retrieving product name, ID, and images with ID: {ProductId}", id);
+
             var product = await _dbContext.Products
                 .Where(x => x.Id == id)
-                .Select(x => new ProductDto
+                .Select(x => new
                 {
                     Id = x.Id,
                     Name = x.Name,
+                    ImageUrls = x.ImageUrls,
                     Price = x.Price,
-                    Images = x.Images.Select(x => new Dto.ImageDto
-                    {
-                        Id = x.Id,
-                        ImagePath = x.ImagePath,
-                    }).ToList()
-                }).FirstOrDefaultAsync();
+
+                })
+                .FirstOrDefaultAsync();
 
             if (product != null)
             {
-                _logger.LogInformation("Product retrieved successfully with ID: {ProductId}", id);
+
+                var productDto = new ProductDto
+                {
+                    Id = product.Id,
+                    Name = product.Name,
+                    Price = product.Price,
+                    ImageUrls = string.IsNullOrEmpty(product.ImageUrls)
+                                ? new List<string>()
+                                : product.ImageUrls.Split(',').ToList()
+                };
+
+                _logger.LogInformation("Product name, ID, and images retrieved successfully with ID: {ProductId}", id);
                 return new BaseResponse<ProductDto>
                 {
                     Success = true,
                     Message = "Product Retrieved Successfully",
-                    Data = product
+                    Data = productDto
                 };
             }
             else
@@ -182,6 +218,8 @@ namespace HotelManagementSystem.Implementation.Services
                 };
             }
         }
+
+
 
         public async Task<BaseResponse<ProductDto>> GetProductAsync(Guid id)
         {
@@ -198,12 +236,7 @@ namespace HotelManagementSystem.Implementation.Services
                     {
                         Id = product.Id,
                         Name = product.Name,
-                        Price = product.Price,
-                        Images = product.Images.Select(x => new Dto.ImageDto
-                        {
-                            Id = x.Id,
-                            ImagePath = x.ImagePath,
-                        }).ToList()
+                        Price = product.Price
                     }
                 };
             }
@@ -223,12 +256,7 @@ namespace HotelManagementSystem.Implementation.Services
                 {
                     Id = x.Id,
                     Name = x.Name,
-                    Price = x.Price,
-                    Images = x.Images.Select(x => new Dto.ImageDto
-                    {
-                        Id = x.Id,
-                        ImagePath = x.ImagePath,
-                    }).ToList()
+                    Price = x.Price
                 }).ToListAsync();
 
             if (products != null)
@@ -258,7 +286,7 @@ namespace HotelManagementSystem.Implementation.Services
             _logger.LogInformation("Updating product with ID: {ProductId}", id);
             try
             {
-                var product = await _dbContext.Products.Include(p => p.Images).FirstOrDefaultAsync(p => p.Id == id);
+                var product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == id);
                 if (product == null)
                 {
                     _logger.LogWarning("Product not found with ID: {ProductId}", id);
@@ -273,22 +301,6 @@ namespace HotelManagementSystem.Implementation.Services
                 // Update product details
                 product.Name = request.Name;
                 product.Price = request.Price;
-                if (request.Images != null )
-                {
-                    _logger.LogInformation("Updating images for product with ID: {ProductId}", id);
-                    _dbContext.Images.RemoveRange(product.Images);
-                    await _dbContext.SaveChangesAsync();
-                    foreach (var imageDto in request.Images)
-                    {
-                        var newImage = new Models.Entity.Images 
-                        {
-                            Id = Guid.NewGuid(),
-                            ImagePath = imageDto.ImagePath,
-                            //ProductId = product.Id
-                        };
-                        _dbContext.Images.Add(newImage);
-                    }
-                }
 
                 _dbContext.Products.Update(product);
                 var result = await _dbContext.SaveChangesAsync();
@@ -324,6 +336,85 @@ namespace HotelManagementSystem.Implementation.Services
                 };
             }
         }
+
+
+        public async Task<PaginatedResponse<List<ProductDto>>> GetAllProductsByPaginationAsync(
+                                                 int pageNumber,
+                                                 int pageSize,
+                                                 decimal price,
+                                                 string searchTerm = null
+)
+        {
+            _logger.LogInformation("Retrieving all products with pagination");
+
+            try
+            {
+                IQueryable<Product> query = _dbContext.Products;
+
+                if (!string.IsNullOrWhiteSpace(searchTerm))
+                {
+                    query = query.Where(x => x.Name.Contains(searchTerm));
+                }
+
+                if (price > 0)
+                {
+                    query = query.Where(x => x.Price == price);
+                }
+
+                var totalRecords = await query.CountAsync();
+                if (totalRecords == 0)
+                {
+                    _logger.LogInformation("No products found matching the search criteria.");
+                    return new PaginatedResponse<List<ProductDto>>
+                    {
+                        Success = true,
+                        Message = "No products found matching the search criteria.",
+                        Data = new List<ProductDto>(),
+                        PageNumber = pageNumber,
+                        PageSize = pageSize,
+                        TotalRecords = 0
+                    };
+                }
+
+                var products = await query
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                var productDtos = products.Select(x => new ProductDto
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Price = x.Price,
+                    ImageUrls = string.IsNullOrEmpty(x.ImageUrls)
+                                ? new List<string>()
+                                : x.ImageUrls.Split(',').ToList()
+                }).ToList();
+
+                _logger.LogInformation("Products retrieved successfully with pagination");
+
+                return new PaginatedResponse<List<ProductDto>>
+                {
+                    Success = true,
+                    Message = "Products retrieved successfully.",
+                    Data = productDtos,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    TotalRecords = totalRecords
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while retrieving products with pagination");
+                return new PaginatedResponse<List<ProductDto>>
+                {
+                    Success = false,
+                    Message = $"An error occurred: {ex.Message}"
+                };
+            }
+        }
+
+
 
     }
 }

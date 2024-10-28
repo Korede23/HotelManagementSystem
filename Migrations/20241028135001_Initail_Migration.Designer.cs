@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagementSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241025215541_Inital_Migration")]
-    partial class Inital_Migration
+    [Migration("20241028135001_Initail_Migration")]
+    partial class Initail_Migration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -35,6 +35,10 @@ namespace HotelManagementSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
 
@@ -51,6 +55,10 @@ namespace HotelManagementSystem.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
@@ -95,6 +103,10 @@ namespace HotelManagementSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
 
@@ -114,6 +126,10 @@ namespace HotelManagementSystem.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
@@ -148,6 +164,10 @@ namespace HotelManagementSystem.Migrations
 
                     b.Property<Guid>("BookingId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
@@ -184,8 +204,16 @@ namespace HotelManagementSystem.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ImageUrls")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -216,6 +244,10 @@ namespace HotelManagementSystem.Migrations
 
                     b.Property<int>("BedType")
                         .HasColumnType("int");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
@@ -349,10 +381,11 @@ namespace HotelManagementSystem.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "bbc86f61-9647-473d-87e3-1a495e35dbe7",
+                            Id = "aad0dc99-c5b3-4770-8719-8dc4247716a0",
                             AccessFailedCount = 0,
+                            Address = "Lagos",
                             AgeRange = "20-40",
-                            ConcurrencyStamp = "d6c5398a-24a5-4436-ba71-f1d3737914ac",
+                            ConcurrencyStamp = "d81fb057-4d83-402c-9fc4-6ab481fb61b1",
                             CreatedTime = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             DateOfBirth = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "admin@gmail.com",
@@ -364,7 +397,8 @@ namespace HotelManagementSystem.Migrations
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@GMAIL.COM",
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEPWUI4RIMEc2ZWGB7sTRN+4+Dlkl2Gpt5lONPrXxbj2x9rP4QAcjEIdbNNbZ9aq6UQ==",
+                            PasswordHash = "AQAAAAIAAYagAAAAECLdB+mJ0aB6AdbDAEb7TvR3cTQw3a9zeB7y84vIBZy7JdM6RQQ1Q1c5ipSJ5fzn8Q==",
+                            PhoneNumber = "09068041575",
                             PhoneNumberConfirmed = false,
                             SecurityStamp = "",
                             TwoFactorEnabled = false,
@@ -388,6 +422,10 @@ namespace HotelManagementSystem.Migrations
 
                     b.Property<DateTime>("CheckOutDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
@@ -433,6 +471,10 @@ namespace HotelManagementSystem.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
@@ -495,13 +537,13 @@ namespace HotelManagementSystem.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "e5e63b3f-fd31-4478-b3e9-50ec0d25d5a0",
+                            Id = "1e40fb6b-3ee4-44b5-896f-3466834ddce3",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "9acdefda-e634-42b7-bcf5-dd2c3ed009ac",
+                            Id = "005972df-3e39-4766-a8e7-58f88aabecb3",
                             Name = "Customer",
                             NormalizedName = "CUSTOMER"
                         });
@@ -596,8 +638,8 @@ namespace HotelManagementSystem.Migrations
                     b.HasData(
                         new
                         {
-                            UserId = "bbc86f61-9647-473d-87e3-1a495e35dbe7",
-                            RoleId = "e5e63b3f-fd31-4478-b3e9-50ec0d25d5a0"
+                            UserId = "aad0dc99-c5b3-4770-8719-8dc4247716a0",
+                            RoleId = "1e40fb6b-3ee4-44b5-896f-3466834ddce3"
                         });
                 });
 

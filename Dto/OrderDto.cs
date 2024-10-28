@@ -11,6 +11,7 @@ namespace HotelManagementSystem.Dto
         public string ProductName { get; set; }
         public Product Products { get; set; }
         public decimal TotalAmount { get; set; }
+        public string UserId { get; set; }
     }
 
 

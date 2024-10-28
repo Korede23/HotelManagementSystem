@@ -12,7 +12,7 @@ namespace HotelManagementSystem.Implementation.Interface
         Task<BaseResponse<OrderDto>> GetOrderAsync(Guid Id);
         Task<BaseResponse<IList<OrderDto>>> GetAllOrderAsync();
         Task<BaseResponse<IList<OrderDto>>> UpdateOrder(Guid Id, UpdateOrder request);
-        Task<List<OrderDto>> GetOrder();
+        Task<List<OrderDto>> GetOrders();
         List<SelectProductDto> GetProductSelect();
     }
 }
