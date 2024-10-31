@@ -70,19 +70,25 @@
         </div>
     }
 </div>
-
-<div class="d-flex justify-content-between mt-4">
-    <div>
-        <span>Page @(Model.PageNumber) of @(Model.TotalPages)</span>
-    </div>
-    <div>
-        @if (Model.HasPreviousPage)
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+            <a class="page-link" asp-controller="Room" asp-action="GetRooms" asp-route-pageNumber="@(Model.PageNumber - 1)" asp-route-pageSize="@(Model.PageSize)" asp-route-searchTerm="@Context.Request.Query["searchTerm"]">
+                &laquo; Previous
+            </a>
+        </li>
+        @for (int i = 1; i <= Model.TotalPages; i++)
         {
-            <a class="btn btn-primary" asp-action="GetRooms" asp-route-pageNumber="@(Model.PageNumber - 1)" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@Context.Request.Query["searchTerm"]">Previous</a>
+            <li class="page-item @(Model.PageNumber == i ? "active" : "")">
+                <a class="page-link" asp-controller="Room" asp-action="GetRooms" asp-route-pageNumber="@i" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@Context.Request.Query["searchTerm"]">
+                    @i
+                </a>
+            </li>
         }
-        @if (Model.HasNextPage)
-        {
-            <a class="btn btn-primary" asp-action="GetRooms" asp-route-pageNumber="@(Model.PageNumber + 1)" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@Context.Request.Query["searchTerm"]">Next</a>
-        }
-    </div>
-</div>
+        <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+            <a class="page-link" asp-controller="Room" asp-action="GetRooms" asp-route-pageNumber="@(Model.PageNumber + 1)" asp-route-pageSize="@Model.PageSize" asp-route-searchTerm="@Context.Request.Query["searchTerm"]">
+                Next &raquo;
+            </a>
+        </li>
+    </ul>
+</nav>

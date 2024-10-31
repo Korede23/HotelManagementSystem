@@ -2,6 +2,7 @@
 using HotelManagementSystem.Dto;
 using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Implementation.Interface;
+using HotelManagementSystem.Model.Entity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -24,11 +25,19 @@ namespace HotelManagementSystem.Controllers
         }
 
         [HttpGet("get-booking")]
-        public async Task<IActionResult> Bookings()
+        public async Task<IActionResult> Bookings(int pageNumber = 1, int pageSize = 5)
         {
-            var book = await _bookService.GetBooking();
-            return View(book);
+            var paginatedResponse = await _bookService.GetBooking(pageNumber, pageSize);
+            var paginatedList = new PaginatedList<BookingDto>(
+                paginatedResponse.Data,
+                paginatedResponse.TotalRecords,
+                pageNumber,
+                pageSize
+            );
+
+            return View(paginatedList);
         }
+
 
 
 

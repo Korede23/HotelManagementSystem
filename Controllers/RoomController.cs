@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using HotelManagementSystem.Models;
 using HotelManagementSystem.Model.Entity;
+using HotelManagementSystem.Implementation.Services;
 
 namespace HotelManagementSystem.Controllers
 {
@@ -26,11 +27,18 @@ namespace HotelManagementSystem.Controllers
         }
 
         [HttpGet("get-rooms")]
-        public async Task<IActionResult> Rooms()
+        public async Task<IActionResult> Rooms(int pageNumber = 1, int pageSize = 5)
         {
-            var room = await _roomService.GetAllRoomsCreatedAsync();
-            return View(room);
+            var paginatedRooms = await _roomService.GetRoomsCreatedAsync(pageNumber, pageSize);
+            var paginatedList = new PaginatedList<RoomDto>(
+                paginatedRooms.Data,
+                paginatedRooms.TotalRecords,
+                pageNumber,
+                pageSize
+            );
+            return View(paginatedList);
         }
+
 
         [HttpGet("create-room")]
         public IActionResult CreateRoom()

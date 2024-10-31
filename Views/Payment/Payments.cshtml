@@ -1,21 +1,19 @@
-﻿@model HotelManagementSystem.Model.Entity.PaginatedList<HotelManagementSystem.Dto.BookingDto>
+﻿@model HotelManagementSystem.Model.Entity.PaginatedList<HotelManagementSystem.Dto.PaymentDto>
+
 @{
     if (User.IsInRole("Admin"))
     {
         Layout = "_AdminLayout";
-        ViewData["Title"] = "Rooms";
+        ViewData["Title"] = "Payments";
     }
     else
     {
         Layout = "_Layout";
     }
 }
-<!-- Recent Sales Start -->
+
 <div class="container-fluid pt-4 px-4">
     <div class="bg-secondary text-center rounded p-4">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <a href="@Url.Action("CreateBooking","Booking")" class="mb-0">Create Booking</a>
-        </div>
         @if (Model != null && Model.Items.Any())
         {
             <div class="table-responsive">
@@ -23,10 +21,13 @@
                     <thead>
                         <tr class="text-white">
                             <th scope="col"><input class="form-check-input" type="checkbox"></th>
-                            <th scope="col">Room</th>
+                            <th scope="col">Amount</th>
+                            <th scope="col">Transaction Reference</th>
+                            <th scope="col">Date Created</th>
+                            <th scope="col">Date Requested</th>
                             <th scope="col">Email</th>
-                            <th scope="col">PhoneNumber</th>
-                            <th scope="col">TotalCost</th>
+                            <th scope="col">Payment Status</th>
+                            <th scope="col">Created By</th>
                             <th scope="col">Action</th>
                         </tr>
                     </thead>
@@ -35,37 +36,36 @@
                         {
                             <tr>
                                 <td><input class="form-check-input" type="checkbox"></td>
-                                <td>@item.RoomName</td>
+                                <td>@item.Amount</td>
+                                <td>@item.TransactionReference</td>
+                                <td>@item.CreatedOn</td>
+                                <td>@item.DateRequested</td>
                                 <td>@item.Email</td>
-                                <td>@item.PhoneNumber</td>
-                                <td>@item.TotalCost</td>
+                                <td>@item.Status</td>
+                                <td>@item.CreatedBy</td>
                                 <td>
-                                    <a asp-action="EditBooking" asp-route-id="@item.Id">Edit</a> |
-                                    <a asp-action="DeleteBooking" asp-route-id="@item.Id">Delete</a> |
-                                    <a asp-action="GetBookingById" asp-route-id="@item.Id">ViewDetails</a>
+                                    <a asp-controller="Payment" asp-action="GetPaymentById" asp-route-id="@item.Id">View Details</a>
                                 </td>
                             </tr>
                         }
                     </tbody>
                 </table>
-                <a href="@Url.Action("Index", "Home")" class="btn btn-primary mt-3 align-content-md-center">Home Page</a>
             </div>
-
             <nav aria-label="Page navigation" class="mt-4">
                 <ul class="pagination justify-content-center">
                     <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
-                        <a class="page-link" href="@Url.Action("Bookings", new { pageNumber = Model.PageNumber - 1, pageSize = Model.PageSize })">
+                        <a class="page-link" href="@Url.Action("Payments", new { pageNumber = Model.PageNumber - 1, pageSize = Model.PageSize })">
                             &laquo; Previous
                         </a>
                     </li>
                     @for (int i = 1; i <= Model.TotalPages; i++)
                     {
                         <li class="page-item @(Model.PageNumber == i ? "active" : "")">
-                            <a class="page-link" href="@Url.Action("Bookings", new { pageNumber = i, pageSize = Model.PageSize })">@i</a>
+                            <a class="page-link" href="@Url.Action("Payments", new { pageNumber = i, pageSize = Model.PageSize })">@i</a>
                         </li>
                     }
                     <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
-                        <a class="page-link" href="@Url.Action("Bookings", new { pageNumber = Model.PageNumber + 1, pageSize = Model.PageSize })">
+                        <a class="page-link" href="@Url.Action("Payments", new { pageNumber = Model.PageNumber + 1, pageSize = Model.PageSize })">
                             Next &raquo;
                         </a>
                     </li>
@@ -74,8 +74,8 @@
         }
         else
         {
-            <h3>No bookings available</h3>
+            <h3>No payments have been made</h3>
         }
     </div>
+    <a href="@Url.Action("Payments", "Payment")" class="btn btn-primary mt-3">Back to List</a>
 </div>
-<!-- Recent Sales End -->

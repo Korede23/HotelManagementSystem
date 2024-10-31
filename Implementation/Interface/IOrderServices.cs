@@ -6,7 +6,7 @@ namespace HotelManagementSystem.Implementation.Interface
 {
     public interface IOrderServices
     {
-        Task<BaseResponse<Guid>> CreateOrder(CreateOrder request);
+        Task<BaseResponse<InitializePaymentResponseDto>> CreateOrder(CreateOrder request);
         Task<BaseResponse<Guid>> DeleteOrderAsync(Guid Id);
         Task<BaseResponse<OrderDto>> GetOrderByIdAsync(Guid Id);
         Task<BaseResponse<OrderDto>> GetOrderAsync(Guid Id);

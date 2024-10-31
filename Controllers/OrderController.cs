@@ -44,9 +44,6 @@ namespace HotelManagementSystem.Controllers
             return View();
         }
 
-
-
-
         [HttpPost("create-order")]
         public async Task<IActionResult> CreateOrder(CreateOrder request)
         {
@@ -56,21 +53,24 @@ namespace HotelManagementSystem.Controllers
             {
                 request.UserId = customerId.ToString();
 
-                var order = await _orderServices.CreateOrder(request);
-                if (order.Success)
+                var orderResponse = await _orderServices.CreateOrder(request);
+
+                if (orderResponse.Success)
                 {
-                    _notyf.Success(order.Message, 3);
-                    var productId = order.Data;
-                    return RedirectToAction("InitiatePaymentForm", "Payment", new { userId = customerId, productId });
+                    _notyf.Success(orderResponse.Message, 3);
+
+                    var productId = orderResponse.Data;
+                    return Redirect(orderResponse.Data.AuthorizationUrl);
                 }
                 else
                 {
-                    _notyf.Error(order.Message, 3);
+                    _notyf.Error(orderResponse.Message, 3);
                     return RedirectToAction("GetProducts", "Product");
                 }
             }
             return RedirectToAction("GetProducts");
         }
+
 
 
         [HttpGet("edit-order/{id}")]

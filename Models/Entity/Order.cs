@@ -9,5 +9,4 @@ namespace HotelManagementSystem.Model.Entity
         public Product Products { get; set; }
         public decimal TotalAmount { get; set; }
     }
-
 }

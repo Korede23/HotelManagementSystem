@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System.Net.Http;
+using System.Text;
 
 namespace HMS.Implementation.Services
 {
@@ -17,27 +20,31 @@ namespace HMS.Implementation.Services
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly UserManager<User> _userManager;
         private readonly ILogger<OrderServices> _logger;
+        private readonly string _secretKey;
+        private readonly HttpClient _httpClient;
 
         public OrderServices(ApplicationDbContext dbContext, IProductServices productServices,
             IHttpContextAccessor httpContextAccessor, UserManager<User> userManager,
+            IConfiguration configuration, HttpClient httpClient,
              ILogger<OrderServices> logger)
         {
             _dbContext = dbContext;
             _productServices = productServices;
             _httpContextAccessor = httpContextAccessor;
             _userManager = userManager;
+            _secretKey = configuration["Paystack:SecretKey"];
+            _httpClient = httpClient;
             _logger = logger;
         }
 
-        public async Task<BaseResponse<Guid>> CreateOrder(CreateOrder request)
+        public async Task<BaseResponse<InitializePaymentResponseDto>> CreateOrder(CreateOrder request)
         {
             _logger.LogInformation("CreateOrder method called.");
-
 
             var userPrincipal = _httpContextAccessor.HttpContext?.User;
             if (userPrincipal == null)
             {
-                return new BaseResponse<Guid>
+                return new BaseResponse<InitializePaymentResponseDto>
                 {
                     Success = false,
                     Message = "User not authenticated"
@@ -47,7 +54,7 @@ namespace HMS.Implementation.Services
             var user = await _userManager.GetUserAsync(userPrincipal);
             if (user == null)
             {
-                return new BaseResponse<Guid>
+                return new BaseResponse<InitializePaymentResponseDto>
                 {
                     Success = false,
                     Message = "User not found"
@@ -57,12 +64,13 @@ namespace HMS.Implementation.Services
             var product = await _dbContext.Products.FindAsync(request.ProductId);
             if (product == null)
             {
-                return new BaseResponse<Guid>
+                return new BaseResponse<InitializePaymentResponseDto>
                 {
                     Success = false,
                     Message = "Product not found"
                 };
             }
+
             var order = new Order
             {
                 ProductId = request.ProductId,
@@ -74,13 +82,87 @@ namespace HMS.Implementation.Services
             _dbContext.Orders.Add(order);
             await _dbContext.SaveChangesAsync();
 
-            return new BaseResponse<Guid>
+            var payment = new Payment
             {
-                Success = true,
-                Message = "Order created successfully",
-                Data = order.Id
+                OrderId = order.Id,
+                Amount = order.TotalAmount,
+                Email = user.Email,
+                Status = "Pending",
+                TransactionReference = Guid.NewGuid().ToString(),
+                DateRequested = DateTime.Now,
+                CreatedBy = user.UserName
+
             };
+
+            _dbContext.Payments.Add(payment);
+            await _dbContext.SaveChangesAsync();
+
+            try
+            {
+                string callbackUrl = "https://localhost:7211/call-back-url";
+                var requestPayload = new
+                {
+                    amount = order.TotalAmount * 100,
+                    email = user.Email.Trim(),
+                    reference = payment.TransactionReference,
+                    callback_url = callbackUrl
+                };
+
+                var requestBody = new StringContent(JsonConvert.SerializeObject(requestPayload), Encoding.UTF8, "application/json");
+
+                var requestMessage = new HttpRequestMessage(HttpMethod.Post, "https://api.paystack.co/transaction/initialize")
+                {
+                    Headers = { Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _secretKey) },
+                    Content = requestBody
+                };
+
+                var response = await _httpClient.SendAsync(requestMessage);
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var paystackResponse = JsonConvert.DeserializeObject<PaystackResponseDto<InitializePaymentResponseDto>>(responseContent);
+
+                    if (paystackResponse != null && paystackResponse.Status)
+                    {
+                        payment.Status = "Initialized";
+                        await _dbContext.SaveChangesAsync();
+
+                        return new BaseResponse<InitializePaymentResponseDto>
+                        {
+                            Success = true,
+                            Message = "Payment initialization successful",
+                            Data = paystackResponse.Data
+                        };
+                    }
+                    else
+                    {
+                        return new BaseResponse<InitializePaymentResponseDto>
+                        {
+                            Success = false,
+                            Message = $"Payment initialization failed. Response: {paystackResponse?.Message ?? "Unknown error"}",
+                        };
+                    }
+                }
+                else
+                {
+                    return new BaseResponse<InitializePaymentResponseDto>
+                    {
+                        Success = false,
+                        Message = $"Payment initialization failed. Status Code: {response.StatusCode}. Response: {responseContent}",
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                return new BaseResponse<InitializePaymentResponseDto>
+                {
+                    Success = false,
+                    Message = $"An error occurred while initializing payment: {ex.Message}",
+                };
+            }
         }
+
 
 
         public List<SelectProductDto> GetProductSelect()

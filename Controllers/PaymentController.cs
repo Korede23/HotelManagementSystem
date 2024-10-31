@@ -1,5 +1,8 @@
-﻿using HotelManagementSystem.Dto.RequestModel;
+﻿using HMS.Implementation.Services;
+using HotelManagementSystem.Dto;
+using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Implementation.Interface;
+using HotelManagementSystem.Implementation.Services;
 using HotelManagementSystem.Model.Entity;
 using Microsoft.AspNetCore.Mvc;
 namespace HotelManagementSystem.Controllers
@@ -50,12 +53,6 @@ namespace HotelManagementSystem.Controllers
         }
 
 
-        [HttpGet("VerifyPayment")]
-        public IActionResult VerifyPaymentForm()
-        {
-            return View();
-        }
-
         [HttpGet("call-back-url")]
         public async Task<IActionResult> PaymentCallback(string reference)
         {
@@ -69,19 +66,42 @@ namespace HotelManagementSystem.Controllers
             if (result.Success)
             {
                 ViewBag.Reference = reference;
-                return View("PaymentSuccess");
+                return RedirectToAction("Payments");
             }
             else
             {
                 ModelState.AddModelError(string.Empty, "Payment verification failed. Please try again.");
-                return View("PaymentFailed");
+                return View("InitiatePayment");
             }
         }
 
-        public IActionResult PaymentSuccess(string reference)
+
+
+        [HttpGet("get-payments")]
+        public async Task<IActionResult> Payments(int pageNumber = 1, int pageSize = 5)
         {
-            ViewBag.Reference = reference;
-            return View();
+            var paginatedResponse = await _paystackService.GetAllPayments(pageNumber, pageSize);
+            var paginatedList = new PaginatedList<PaymentDto>(
+                paginatedResponse.Data,
+                paginatedResponse.TotalRecords,
+                pageNumber,
+                pageSize
+            );
+
+            return View(paginatedList);
+        }
+
+
+
+        [HttpGet("get-payment/{id}")]
+        public async Task<IActionResult> GetPaymentById(Guid id)
+        {
+            var payment = await _paystackService.GetPaymentById(id);
+            if (payment != null)
+            {
+                return View(payment);
+            }
+            return RedirectToAction("Payments");
         }
     }
 }

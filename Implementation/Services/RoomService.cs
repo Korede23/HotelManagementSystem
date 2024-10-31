@@ -38,9 +38,9 @@ namespace HotelManagementSystem.Implementation.Services
                 if (request != null)
                 {
 
-                    var existingRoom = await _dbContext.Rooms.AnyAsync(x => x.Id == request.RoomId);
+                    var existingRoom = await _dbContext.Rooms.AnyAsync(x => x.RoomName == request.RoomName);
 
-                    if (existingRoom != false)
+                    if (existingRoom)
                     {
                         _logger.LogWarning("Room already exists: {RoomName}", request.RoomName);
                         return new BaseResponse<Guid>
@@ -95,7 +95,7 @@ namespace HotelManagementSystem.Implementation.Services
                         MaxOccupancy = request.MaxOccupancy,
                         AmenityId = request.AmenityId,
                         Amenity = request.Amenity,
-                         CreatedBy = user.UserName
+                        CreatedBy = user.UserName
                     };
 
                     await _dbContext.Rooms.AddAsync(room);
@@ -257,15 +257,20 @@ namespace HotelManagementSystem.Implementation.Services
             }
         }
 
-        public async Task<List<RoomDto>> GetAllRoomsCreatedAsync()
+        public async Task<PaginatedResponse<List<RoomDto>>> GetRoomsCreatedAsync(int pageNumber, int pageSize)
         {
-            _logger.LogInformation("Retrieving all rooms");
+            _logger.LogInformation("Retrieving all rooms with pagination");
 
             try
             {
+                var totalRoomsCount = await _dbContext.Rooms.CountAsync();
+
                 var rooms = await _dbContext.Rooms
                     .Include(x => x.Amenity)
                     .Include(x => x.Images)
+                    .OrderByDescending(x => x.CreatedTime)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
                     .Select(x => new RoomDto
                     {
                         Id = x.Id,
@@ -278,22 +283,36 @@ namespace HotelManagementSystem.Implementation.Services
                         RoomType = x.RoomType,
                         MaxOccupancy = x.MaxOccupancy,
                         AmenityName = x.Amenity.AmenityName,
-                        Images = x.Images.Select(x => new Dto.ImageDto
+                        Images = x.Images.Select(i => new Dto.ImageDto
                         {
-                            Id = x.Id,
-                            ImagePath = x.ImagePath,
+                            Id = i.Id,
+                            ImagePath = i.ImagePath,
                         }).ToList()
                     }).ToListAsync();
 
                 _logger.LogInformation("All rooms retrieved successfully");
-                return rooms;
+
+                return new PaginatedResponse<List<RoomDto>>
+                {
+                    Data = rooms,
+                    TotalRecords = totalRoomsCount,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while retrieving all rooms");
-                return new List<RoomDto>();
+                return new PaginatedResponse<List<RoomDto>>
+                {
+                    Data = new List<RoomDto>(),
+                    TotalRecords = 0,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                };
             }
         }
+
 
         public async Task<BaseResponse<RoomDto>> GetRoomsByIdAsync(Guid Id)
         {

@@ -34,7 +34,9 @@ namespace HotelManagementSystem.Implementation.Services
             {
                 _logger.LogInformation("Start Create Password Request");
 
-                var user = await _userManager.FindByEmailAsync(request.Email);
+                var user = await _dbContext.Users
+                         .FirstOrDefaultAsync(u => u.Email == request.Email);
+
                 if (user == null)
                 {
                     _logger.LogInformation($"User with the {request.Email} does not exist");
@@ -44,6 +46,7 @@ namespace HotelManagementSystem.Implementation.Services
                         Message = $"User with the {request.Email} does not exist"
                     };
                 }
+
 
                 // Generate the reset code
                 string resetCode = GenerateRandomCode(8);
@@ -181,14 +184,12 @@ namespace HotelManagementSystem.Implementation.Services
 
         private string GenerateRandomCode(int length)
         {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
             var random = new Random();
+            var randomNumber = random.Next(100000, 1000000); 
 
-            return new string(Enumerable
-                .Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)])
-                .ToArray());
+            return randomNumber.ToString();
         }
+
     }
 
 }

@@ -1,8 +1,11 @@
-﻿using HotelManagementSystem.Dto.RequestModel;
+﻿using HotelManagementSystem.Dto;
+using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Dto.ResponseModel;
 using HotelManagementSystem.Implementation.Interface;
 using HotelManagementSystem.Model.Entity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Text;
 namespace HotelManagementSystem.Implementation.Services
@@ -39,7 +42,7 @@ namespace HotelManagementSystem.Implementation.Services
 
         public async Task<BaseResponse<InitializePaymentResponseDto>> InitializePaymentAsync(InitializePaymentRequestDto requestDto, string userId, Guid bookingId)
         {
-            _logger.LogInformation("InitializePaymentRequestDto called with BookingId: {BookingId}, UserId: {UserId}, OrderId: {OrderId}", bookingId, userId);
+            _logger.LogInformation("InitializePaymentRequestDto called with BookingId: {BookingId}, UserId: {UserId}, OrderId: {OrderId}", requestDto, bookingId, userId);
 
             try
             {
@@ -98,8 +101,7 @@ namespace HotelManagementSystem.Implementation.Services
                 _dbcontext.Payments.Add(payment);
                 await _dbcontext.SaveChangesAsync();
 
-                string callbackUrl = "https://localhost:7211/Payment/PaymentCallback";
-
+                string callbackUrl = "https://localhost:7211/call-back-url";
                 var requestPayload = new
                 {
                     amount = booking.Data.TotalCost * 100,
@@ -201,6 +203,118 @@ namespace HotelManagementSystem.Implementation.Services
                 };
             }
         }
+
+        public async Task<PaginatedResponse<List<PaymentDto>>> GetAllPayments(int pageNumber, int pageSize)
+        {
+            _logger.LogInformation("GetAllPayments method called with pagination.");
+
+            var userPrincipal = _httpContextAccessor.HttpContext?.User;
+            if (userPrincipal == null)
+            {
+                return new PaginatedResponse<List<PaymentDto>>
+                {
+                    Data = new List<PaymentDto>(),
+                    TotalRecords = 0,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
+            }
+
+            var user = await _userManager.GetUserAsync(userPrincipal);
+            if (user == null)
+            {
+                return new PaginatedResponse<List<PaymentDto>>
+                {
+                    Data = new List<PaymentDto>(),
+                    TotalRecords = 0,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
+            }
+
+            bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
+            IQueryable<Booking> query = _dbContext.Bookings.Include(x => x.Rooms);
+            if (!isAdmin)
+            {
+                query = query.Where(o => o.CreatedBy == user.UserName);
+            }
+
+            var totalPaymentsCount = await query.CountAsync();
+
+
+            var payments = await _dbContext.Payments
+                .OrderBy(x => x.CreatedOn) 
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new PaymentDto
+                {
+                    Id = x.Id,
+                    Amount = x.Amount,
+                    CreatedOn = x.CreatedOn,
+                    DateRequested = x.DateRequested,
+                    Email = x.Email,
+                    Status = x.Status,
+                    CreatedBy = x.CreatedBy,
+                    TransactionReference = x.TransactionReference,
+                })
+                .ToListAsync();
+
+            _logger.LogInformation("Retrieved {Count} payments.", payments.Count);
+
+            return new PaginatedResponse<List<PaymentDto>>
+            {
+                Data = payments,
+                TotalRecords = totalPaymentsCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
+
+
+
+        public async Task<PaymentDto> GetPaymentById(Guid Id)
+        {
+            _logger.LogInformation("GetPaymentById method called.");
+            var userPrincipal = _httpContextAccessor.HttpContext?.User;
+            if (userPrincipal == null)
+            {
+                return new PaymentDto();
+            }
+
+            var user = await _userManager.GetUserAsync(userPrincipal);
+            if (user == null)
+            {
+                return new PaymentDto();
+            }
+
+            var payment = await _dbContext.Payments
+                .Where(x => x.Id == Id && x.CreatedBy == user.UserName)
+                .Select(x => new PaymentDto()
+                {
+                    Amount = x.Amount,
+                    CreatedOn = x.CreatedOn,
+                    DateRequested = x.DateRequested,
+                    Email = x.Email,
+                    Status = x.Status,
+                    TransactionReference = x.TransactionReference,
+                    CreatedBy = x.CreatedBy,
+                    Id = x.Id
+                })
+                .FirstOrDefaultAsync();
+
+            if (payment == null)
+            {
+                _logger.LogInformation("No payment found for the given ID.");
+            }
+            else
+            {
+                _logger.LogInformation("Retrieved payment for ID: {Id}", Id);
+            }
+
+            return payment;
+        }
+
 
     }
 }

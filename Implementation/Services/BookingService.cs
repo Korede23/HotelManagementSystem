@@ -5,6 +5,7 @@ using HotelManagementSystem.Implementation.Interface;
 using HotelManagementSystem.Model.Entity;
 using HotelManagementSystem.Model.Entity.Enum;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace HotelManagementSystem.Implementation.Services
@@ -44,21 +45,16 @@ namespace HotelManagementSystem.Implementation.Services
                         Hasherror = true
                     };
                 }
+                var checkRoom = await _dbContext.Rooms.Where(x => x.Availability == RoomAvailability.NotAvailable).ToListAsync();
+                if (checkRoom.Any())
+                {
+                    return new BaseResponse<Guid>
+                    {
+                        Success = false,
+                        Message = "Sorry, the room is currently not available."
+                    };
+                }
 
-                //var existingBooking = await _dbContext.Bookings
-                //                                        .Where(b => b.RoomId == request.RoomId)
-                //                                        .FirstOrDefaultAsync();
-
-                //if (existingBooking != null)
-                //{
-                //    _logger.LogWarning("Room is already booked for RoomId: {RoomId}", request.RoomId);
-                //    return new BaseResponse<Guid>
-                //    {
-                //        Success = false,
-                //        Message = "Room is not available at the moment.",
-                //        Hasherror = true
-                //    };
-                //}
                 var userPrincipal = _httpContextAccessor.HttpContext?.User;
                 if (userPrincipal == null)
                 {
@@ -128,24 +124,49 @@ namespace HotelManagementSystem.Implementation.Services
             }
         }
 
-        public async Task<List<BookingDto>> GetBooking()
+        public async Task<PaginatedResponse<List<BookingDto>>> GetBooking(int pageNumber = 1, int pageSize = 5)
         {
-            _logger.LogInformation("GetBooking method called.");
+            _logger.LogInformation("GetBooking method called with pagination.");
+
             var userPrincipal = _httpContextAccessor.HttpContext?.User;
             if (userPrincipal == null)
             {
-                return new List<BookingDto>();
+                return new PaginatedResponse<List<BookingDto>>
+                {
+                    Data = new List<BookingDto>(),
+                    TotalRecords = 0,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
             }
 
             var user = await _userManager.GetUserAsync(userPrincipal);
             if (user == null)
             {
-                return new List<BookingDto>();
+                return new PaginatedResponse<List<BookingDto>>
+                {
+                    Data = new List<BookingDto>(),
+                    TotalRecords = 0,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
             }
-            var bookings = await _dbContext.Bookings
-                .Include(x => x.Rooms)
-                .Where(o => o.CreatedBy == user.UserName)
-                .Select(x => new BookingDto()
+
+            bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
+            IQueryable<Booking> query = _dbContext.Bookings.Include(x => x.Rooms);
+            if (!isAdmin)
+            {
+                query = query.Where(o => o.CreatedBy == user.UserName);
+            }
+
+            var totalBookingsCount = await query.CountAsync();
+
+            var bookings = await query
+                .OrderByDescending(x => x.CreatedTime)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new BookingDto
                 {
                     Id = x.Id,
                     RoomId = x.RoomId,
@@ -154,9 +175,18 @@ namespace HotelManagementSystem.Implementation.Services
                     TotalCost = x.TotalCost,
                     RoomName = x.Rooms.RoomName,
                     Status = x.Rooms.RoomStatus
-                }).ToListAsync();
+                })
+                .ToListAsync();
+
             _logger.LogInformation("Retrieved {Count} bookings.", bookings.Count);
-            return bookings;
+
+            return new PaginatedResponse<List<BookingDto>>
+            {
+                Data = bookings,
+                TotalRecords = totalBookingsCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
 
 
@@ -253,21 +283,21 @@ namespace HotelManagementSystem.Implementation.Services
         public async Task<BaseResponse<BookingDto>> GetBookingByIdAsync(Guid Id)
         {
             _logger.LogInformation("GetBookingByIdAsync method called with Id: {Id}", Id);
-         var bookings = await _dbContext.Bookings
-        .Include(x => x.Rooms)
-        .Where(x => x.Id == Id)
-        .Select(x => new BookingDto()
-        {
-            Id = x.Id,
-            Rooms = x.Rooms,
-            RoomId = x.RoomId,
-            Email = x.Email,
-            PhoneNumber = x.PhoneNumber,
-            TotalCost = x.TotalCost,
-            RoomName = x.Rooms.RoomName,
-            Status = x.Rooms.RoomStatus
-        })
-        .FirstOrDefaultAsync();
+            var bookings = await _dbContext.Bookings
+           .Include(x => x.Rooms)
+           .Where(x => x.Id == Id)
+           .Select(x => new BookingDto()
+           {
+               Id = x.Id,
+               Rooms = x.Rooms,
+               RoomId = x.RoomId,
+               Email = x.Email,
+               PhoneNumber = x.PhoneNumber,
+               TotalCost = x.TotalCost,
+               RoomName = x.Rooms.RoomName,
+               Status = x.Rooms.RoomStatus
+           })
+           .FirstOrDefaultAsync();
             if (bookings != null)
             {
                 _logger.LogInformation("Booking retrieved successfully for Id: {Id}", Id);

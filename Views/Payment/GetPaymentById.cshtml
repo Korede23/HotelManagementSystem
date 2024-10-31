@@ -1,0 +1,64 @@
+﻿@model HotelManagementSystem.Dto.PaymentDto
+@{
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Payments";
+    }
+    else
+    {
+        Layout = "_Layout";
+    }
+}
+
+<div class="container-fluid pt-4 px-4">
+    <div class="bg-secondary text-center rounded p-4">
+        <h2>Order Details</h2>
+        <div class="table-responsive">
+            @if (Model != null)
+            {
+                <table class="table text-start align-middle table-bordered table-hover mb-0">
+                    <tbody>
+                        <tr>
+                            <th scope="row">Amount</th>
+                            <td>@Model.Amount</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Transaction Reference</th>
+                            <td>@Model.TransactionReference</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Date Created</th>
+                            <td>@Model.CreatedOn</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Created By</th>
+                            <td>@Model.CreatedBy</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Payment Status</th>
+                            <td>@Model.Status</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Date requeted</th>
+                            <td>@Model.DateRequested</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Email</th>
+                            <td>@Model.Email</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Created By</th>
+                            <td>@Model.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p>Order details are not available.</p>
+            }
+            <a href="@Url.Action("Payments", "Payment")" class="btn btn-primary mt-3">Back to List</a>
+        </div>
+    </div>
+</div>

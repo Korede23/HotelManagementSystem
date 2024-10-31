@@ -1,6 +1,7 @@
 ﻿using HotelManagementSystem.Dto;
 using HotelManagementSystem.Dto.RequestModel;
 using HotelManagementSystem.Dto.ResponseModel;
+using HotelManagementSystem.Model.Entity;
 
 namespace HotelManagementSystem.Implementation.Interface
 {
@@ -12,8 +13,8 @@ namespace HotelManagementSystem.Implementation.Interface
         Task<BaseResponse<IList<BookingDto>>> GetAllBookingsAsync();
         Task<BaseResponse<BookingDto>> UpdateBooking(Guid Id, UpdateBooking request);
         Task<BaseResponse<BookingDto>> GetBookingAsync(Guid Id);
-        Task<List<BookingDto>> GetBooking();
         List<SelectRoomDto> GetRoomSelect();
         Task<IEnumerable<ActiveBookingDto>> GetActiveBookings();
+        Task<PaginatedResponse<List<BookingDto>>> GetBooking(int pageNumber = 1, int pageSize = 5);
     }
 }
