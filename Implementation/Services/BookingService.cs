@@ -45,16 +45,15 @@ namespace HotelManagementSystem.Implementation.Services
                         Hasherror = true
                     };
                 }
-                var checkRoom = await _dbContext.Rooms.Where(x => x.Availability == RoomAvailability.NotAvailable).ToListAsync();
-                if (checkRoom.Any())
+                if (room.Availability == RoomAvailability.NotAvailable)
                 {
                     return new BaseResponse<Guid>
                     {
                         Success = false,
-                        Message = "Sorry, the room is currently not available."
+                        Message = "Unfortunately, this room is currently unavailable. Please consider selecting a different room, or check back later for availability."
+
                     };
                 }
-
                 var userPrincipal = _httpContextAccessor.HttpContext?.User;
                 if (userPrincipal == null)
                 {

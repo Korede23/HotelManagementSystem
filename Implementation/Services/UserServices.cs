@@ -37,35 +37,36 @@ namespace HotelManagementSystem.Dto.Implementation.Services
             {
                 if (request != null)
                 {
+                    // Set role to "Customer" if the request role is null or if the user is not an admin
+                    var roleToAssign = request.Role ?? UserRole.Customer;
+
                     var user = new User()
                     {
-                        FullName = request.LastName + " " + request.FirstName,
+                        FullName = $"{request.LastName} {request.FirstName}",
                         UserName = request.UserName,
                         Address = request.Address,
                         DateOfBirth = request.DateOfBirth,
                         Email = request.Email,
                         Gender = request.Gender,
                         PhoneNumber = request.PhoneNumber,
-                        UserRole = request.Role,
+                        UserRole = roleToAssign,
                         FirstName = request.FirstName,
                         LastName = request.LastName,
                         AgeRange = request.AgeRange
-
                     };
 
                     var result = await _userManager.CreateAsync(user, request.Password);
 
                     if (result.Succeeded)
                     {
-
-                        var addUserRole = await _userManager.AddToRoleAsync(user, request.Role.ToString());
+                        var addUserRole = await _userManager.AddToRoleAsync(user, roleToAssign.ToString());
 
                         if (addUserRole.Succeeded)
                         {
                             return new BaseResponse<Guid>
                             {
                                 Success = true,
-                                Message = $"{request.Role} created successfully",
+                                Message = $"{roleToAssign} created successfully",
                                 Data = Guid.Parse(user.Id)
                             };
                         }
@@ -76,7 +77,7 @@ namespace HotelManagementSystem.Dto.Implementation.Services
                 return new BaseResponse<Guid>
                 {
                     Success = false,
-                    Message = "User Creation failed"
+                    Message = "User creation failed"
                 };
             }
             catch (Exception ex)
@@ -85,10 +86,11 @@ namespace HotelManagementSystem.Dto.Implementation.Services
                 return new BaseResponse<Guid>
                 {
                     Success = false,
-                    Message = "User Creation failed"
+                    Message = "User creation failed"
                 };
             }
         }
+
 
         public async Task<BaseResponse<Guid>> DeleteUserAsync(string id)
         {

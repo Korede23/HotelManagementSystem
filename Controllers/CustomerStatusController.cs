@@ -50,7 +50,7 @@ namespace HotelManagementSystem.Controllers
 
             ModelState.AddModelError(string.Empty, response.Message);
             _notyf.Error(response.Message);
-            return View();
+            return RedirectToAction("CustomerStatus");
         }
 
         [HttpGet("check-out/{customerId}")]
@@ -71,7 +71,7 @@ namespace HotelManagementSystem.Controllers
                 return RedirectToAction("CustomerStatus");
             }
             _notyf.Error(response.Message);
-            return BadRequest();
+            return RedirectToAction("CustomerStatus");
         }
     }
 

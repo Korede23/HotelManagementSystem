@@ -1,4 +1,6 @@
-﻿@{
+﻿@model HotelManagementSystem.Dto.DashBoardDto
+@using System.Globalization
+@{
     Layout = "_AdminLayout";
 }
 
@@ -6,43 +8,46 @@
 <div class="container-fluid pt-4 px-4">
     <div class="row g-4">
         <div class="col-sm-6 col-xl-3">
-            <div class="bg-secondary rounded d-flex align-items-center justify-content-between p-4">
-                <i class="fa fa-chart-line fa-3x text-primary"></i>
-                <div class="ms-3">
-                    <p class="mb-2">Today Sale</p>
-                    <h6 class="mb-0">$1234</h6>
+            <div class="bg-secondary rounded d-flex flex-column align-items-center p-4">
+                <i class="fa fa-chart-bar fa-3x text-primary mb-2"></i>
+                <div class="text-center">
+                    <p class="mb-2">Total Sales</p>
+                  <h6 class="mb-0">@String.Format(new CultureInfo("en-NG"), "{0:C}", Model.TotalPayments)</h6>
+
                 </div>
             </div>
         </div>
         <div class="col-sm-6 col-xl-3">
-            <div class="bg-secondary rounded d-flex align-items-center justify-content-between p-4">
-                <i class="fa fa-chart-bar fa-3x text-primary"></i>
-                <div class="ms-3">
-                    <p class="mb-2">Total Sale</p>
-                    <h6 class="mb-0">$1234</h6>
+            <div class="bg-secondary rounded d-flex flex-column align-items-center p-4">
+                <i class="fa fa-chart-bar fa-3x text-primary mb-2"></i>
+                <div class="text-center">
+                    <p class="mb-2">Total Bookings</p>
+                    <h6 class="mb-0">@Model.TotalBookings</h6>
                 </div>
             </div>
+
         </div>
         <div class="col-sm-6 col-xl-3">
-            <div class="bg-secondary rounded d-flex align-items-center justify-content-between p-4">
-                <i class="fa fa-chart-area fa-3x text-primary"></i>
-                <div class="ms-3">
+            <div class="bg-secondary rounded d-flex flex-column align-items-center p-4">
+                <i class="fa fa-chart-bar fa-3x text-primary mb-2"></i>
+                <div class="text-center">
                     <p class="mb-2">Today Products</p>
-                    <h6 class="mb-0">$1234</h6>
+                    <h6 class="mb-0">@Model.TotalProducts</h6>
                 </div>
             </div>
         </div>
         <div class="col-sm-6 col-xl-3">
-            <div class="bg-secondary rounded d-flex align-items-center justify-content-between p-4">
-                <i class="fa fa-chart-pie fa-3x text-primary"></i>
-                <div class="ms-3">
+            <div class="bg-secondary rounded d-flex flex-column align-items-center p-4">
+                <i class="fa fa-chart-bar fa-3x text-primary mb-2"></i>
+                <div class="text-center">
                     <p class="mb-2">Total Rooms</p>
-                    <h6 class="mb-0">$1234</h6>
+                    <h6 class="mb-0">@Model.TotalRooms</h6>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 <!-- Sale & Revenue End -->
 <!-- Sales Chart Start -->
 <div class="container-fluid pt-4 px-4">
@@ -67,4 +72,5 @@
         </div>
     </div>
 </div>
+
 <!-- Sales Chart End -->

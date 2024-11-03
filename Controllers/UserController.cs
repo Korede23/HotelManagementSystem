@@ -50,6 +50,10 @@ namespace HotelManagementSystem.Controllers
         [HttpPost("create-user")]
         public async Task<IActionResult> CreateUser(CreateUser request , CreateUser profile)
         {
+            if (!User.IsInRole("Admin") || request.Role == null)
+            {
+                request.Role = UserRole.Customer;
+            }
             var userResponse = await _userServices.CreateUser(request);
 
             if (userResponse.Success)

@@ -10,7 +10,7 @@ namespace HotelManagementSystem.Model.Entity
         public decimal Amount { get; set; }
         public string TransactionReference { get; set; }
         public string Status { get; set; }
-        public Guid? OrderId { get; set; }
+        public Guid OrderId { get; set; } = Guid.Empty;
         public DateTime DateRequested { get; set; } = DateTime.Now;
         public DateTime CreatedOn { get; set; } = DateTime.Now;
     }

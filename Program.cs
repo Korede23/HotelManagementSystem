@@ -3,6 +3,8 @@ using HMS.Implementation.Interface;
 using HMS.Implementation.Services;
 using HotelManagementSystem.Dto.Implementation.Services;
 using HotelManagementSystem.Implementation.Interface;
+using HotelManagementSystem.Implementation.IRepository;
+using HotelManagementSystem.Implementation.Repository;
 using HotelManagementSystem.Implementation.Services;
 using HotelManagementSystem.Model.Entity;
 using HotelManagementSystem.Models.Entity;
@@ -51,6 +53,8 @@ builder.Services.AddTransient<ICustomerStatusServices , CustomerStatusServices>(
 builder.Services.AddTransient<IImageService  , ImageService>();
 builder.Services.AddTransient<IFileService  , FileService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IDashBoardService, DashBoardService>();
+builder.Services.AddScoped<IDashBoardRepository, DashBoardRepository>();
 builder.Services.AddTransient<IRequestPasswordResetService , RequestPasswordResetService>();
 builder.Services.AddNotyf(config =>
 {

@@ -15,6 +15,6 @@ namespace HotelManagementSystem.Dto.RequestModel
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string AgeRange { get; set; }
-        public UserRole Role { get; set; }
+        public UserRole? Role { get; set; }
     }
 }

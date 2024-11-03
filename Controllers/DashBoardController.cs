@@ -1,21 +1,19 @@
 ﻿using HotelManagementSystem.Dto;
 using HotelManagementSystem.Implementation.Interface;
-using Microsoft.AspNetCore.Authorization;
+using HotelManagementSystem.Implementation.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelManagementSystem.Controllers
 {
-    [Authorize]
-    public class AdminController : Controller
+    public class DashBoardController : Controller
     {
         private readonly IDashBoardService _dashBoardService;
 
-        public AdminController(IDashBoardService dashBoardService)
+        public DashBoardController(IDashBoardService dashBoardService)
         {
             _dashBoardService = dashBoardService;
         }
-        
-        public ActionResult<DashBoardDto> Index()
+        public ActionResult<DashBoardDto> GetDashboardCounts()
         {
             var result = _dashBoardService.DashBoardCount();
             return View(result);

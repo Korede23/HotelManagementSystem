@@ -234,29 +234,30 @@ namespace HotelManagementSystem.Implementation.Services
 
             bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
 
-            IQueryable<Booking> query = _dbContext.Bookings.Include(x => x.Rooms);
+            IQueryable<Payment> query = _dbContext.Payments;
+
             if (!isAdmin)
             {
-                query = query.Where(o => o.CreatedBy == user.UserName);
+                query = query.Where(p => p.CreatedBy == user.UserName);
             }
+
 
             var totalPaymentsCount = await query.CountAsync();
 
-
-            var payments = await _dbContext.Payments
-                .OrderBy(x => x.CreatedOn) 
+            var payments = await query
+                .OrderBy(p => p.CreatedOn)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .Select(x => new PaymentDto
+                .Select(p => new PaymentDto
                 {
-                    Id = x.Id,
-                    Amount = x.Amount,
-                    CreatedOn = x.CreatedOn,
-                    DateRequested = x.DateRequested,
-                    Email = x.Email,
-                    Status = x.Status,
-                    CreatedBy = x.CreatedBy,
-                    TransactionReference = x.TransactionReference,
+                    Id = p.Id,
+                    Amount = p.Amount,
+                    CreatedOn = p.CreatedOn,
+                    DateRequested = p.DateRequested,
+                    Email = p.Email,
+                    Status = p.Status,
+                    CreatedBy = p.CreatedBy,
+                    TransactionReference = p.TransactionReference,
                 })
                 .ToListAsync();
 

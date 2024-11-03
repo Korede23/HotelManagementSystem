@@ -5,6 +5,8 @@ namespace HotelManagementSystem.Dto
     public class PaymentDto
     {
         public Guid Id { get; set; }
+        public Guid BookingId { get; set; }
+        public Guid OrderId { get; set; }
         public string Email { get; set; }
         public decimal Amount { get; set; }
         public string TransactionReference { get; set; }
