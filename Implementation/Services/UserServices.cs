@@ -86,7 +86,7 @@ namespace HotelManagementSystem.Dto.Implementation.Services
                 return new BaseResponse<Guid>
                 {
                     Success = false,
-                    Message = "User creation failed"
+                    Message = $"User creation failed: {ex.Message}"
                 };
             }
         }
